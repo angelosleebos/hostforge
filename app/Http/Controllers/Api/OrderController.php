@@ -59,32 +59,27 @@ final class OrderController extends Controller
             // Execute action
             $order = $this->createOrderAction->execute($customerData, $orderData);
 
-            // Create Mollie payment
-            $customer = $order->customer;
-            
-            // Ensure customer has Mollie customer ID
-            if (!$customer->mollie_customer_id) {
-                $customer->createAsMollieCustomer([
-                    'name' => $customer->full_name,
-                    'email' => $customer->email,
-                ]);
-            }
-
-            // Create payment using Mollie Cashier
-            // Amount should be in cents format for Mollie
-            $amountInCents = (int) round($order->total * 100);
-            
-            $payment = $customer
-                ->newFirstPaymentChargeThroughCheckout()
-                ->amount($amountInCents, 'EUR')
-                ->description("Bestelling #{$order->order_number}")
-                ->redirectUrl(config('app.url') . "/payment/return?order={$order->order_number}")
-                ->webhookUrl(route('api.webhooks.mollie'))
-                ->metadata([
+            // Create Mollie payment using direct API
+            $paymentData = [
+                'amount' => [
+                    'currency' => 'EUR',
+                    'value' => number_format((float) $order->total, 2, '.', ''),
+                ],
+                'description' => "Bestelling #{$order->order_number}",
+                'redirectUrl' => config('app.url') . "/payment/return?order={$order->order_number}",
+                'metadata' => [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,
-                ])
-                ->create();
+                    'customer_id' => $order->customer_id,
+                ],
+            ];
+
+            // Only add webhook in production (localhost not reachable by Mollie)
+            if (!app()->environment('local')) {
+                $paymentData['webhookUrl'] = route('api.webhooks.mollie');
+            }
+
+            $payment = Mollie::api()->payments->create($paymentData);
 
             return response()->json([
                 'success' => true,

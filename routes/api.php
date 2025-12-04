@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BillingController;
-use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Api\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\HostingPackageController;
@@ -82,6 +82,7 @@ Route::prefix('admin')->group(function () {
         
         // Customer management
         Route::get('/customers', [AdminCustomerController::class, 'index']);
+        Route::get('/customers/pending', [AdminCustomerController::class, 'pending']);
         Route::get('/customers/{customer}', [AdminCustomerController::class, 'show']);
         Route::patch('/customers/{customer}/status', [AdminCustomerController::class, 'updateStatus']);
 

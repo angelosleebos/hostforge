@@ -30,6 +30,7 @@ class CustomerResource extends JsonResource
             'country' => $this->country,
             'vat_number' => $this->vat_number,
             'status' => $this->status,
+            'status_reason' => $this->status_reason,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
             

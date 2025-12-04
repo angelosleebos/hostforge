@@ -33,6 +33,7 @@ class Customer extends Authenticatable
         'country',
         'vat_number',
         'status',
+        'status_reason',
         'plesk_user_id',
         'moneybird_contact_id',
     ];
