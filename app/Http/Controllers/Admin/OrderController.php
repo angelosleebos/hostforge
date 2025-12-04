@@ -94,59 +94,69 @@ final class OrderController extends Controller
             ], 500);
         }
     }
-}
-            ]);
 
-            // Trigger provisioning when approved
-            if ($oldStatus === 'pending' && $newStatus === 'processing') {
-                // Dispatch jobs for provisioning
-                dispatch(new ProvisionHostingJob($order));
-                
-                // Register domain if exists
-                $domain = $order->domains->first();
-                if ($domain) {
-                    dispatch(new RegisterDomainJob($domain));
-                }
-                
-                // Create invoice in Moneybird
-                dispatch(new CreateInvoiceJob($order));
-                
-                Log::info('Provisioning jobs dispatched', [
-                    'order_id' => $order->id,
-                ]);
+    /**
+     * Approve a pending order.
+     */
+    public function approve(Order $order): JsonResponse
+    {
+        try {
+            if ($order->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Alleen pending orders kunnen goedgekeurd worden',
+                ], 400);
             }
 
-            // Suspend services when order is suspended
-            if ($newStatus === 'suspended') {
-                // TODO: Dispatch SuspendHostingJob
-                Log::info('Order suspended', ['order_id' => $order->id]);
-            }
-
-            // Reactivate services
-            if ($oldStatus === 'suspended' && $newStatus === 'active') {
-                // TODO: Dispatch ReactivateHostingJob
-                Log::info('Order reactivated', ['order_id' => $order->id]);
-            }
-
-            DB::commit();
+            $order = $this->approveOrderAction->execute($order);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Order status bijgewerkt',
-                'data' => $order->fresh(),
+                'message' => 'Order goedgekeurd',
+                'data' => new OrderResource($order),
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            
-            Log::error('Order status update failed', [
+            Log::error('Failed to approve order', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Er ging iets mis',
+                'message' => 'Kon order niet goedkeuren',
+            ], 500);
+        }
+    }
+
+    /**
+     * Get dashboard statistics.
+     */
+    public function dashboardStats(): JsonResponse
+    {
+        try {
+            $stats = [
+                'total_revenue' => Order::where('status', 'active')->sum('total_price'),
+                'pending_orders' => Order::where('status', 'pending')->count(),
+                'active_customers' => Order::where('status', 'active')->distinct('customer_id')->count(),
+                'monthly_revenue' => Order::where('status', 'active')
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('total_price'),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch dashboard stats', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Kon statistieken niet ophalen',
             ], 500);
         }
     }

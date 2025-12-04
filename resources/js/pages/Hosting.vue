@@ -32,15 +32,23 @@
             <ul class="mt-8 space-y-4">
               <li class="flex items-start">
                 <span class="text-primary-500 mr-2">✓</span>
-                <span class="text-gray-700 dark:text-gray-300">{{ pkg.disk_space }}GB Opslag</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ Math.round(pkg.disk_space_mb / 1024) }}GB Opslag</span>
               </li>
               <li class="flex items-start">
                 <span class="text-primary-500 mr-2">✓</span>
-                <span class="text-gray-700 dark:text-gray-300">{{ pkg.bandwidth }}GB Bandbreedte</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ pkg.bandwidth_gb }}GB Bandbreedte</span>
               </li>
               <li class="flex items-start">
                 <span class="text-primary-500 mr-2">✓</span>
-                <span class="text-gray-700 dark:text-gray-300">{{ pkg.domains }} Domeinen</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ pkg.domains }} {{ pkg.domains === 1 ? 'Domein' : 'Domeinen' }}</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-primary-500 mr-2">✓</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ pkg.databases }} {{ pkg.databases === 1 ? 'Database' : 'Databases' }}</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-primary-500 mr-2">✓</span>
+                <span class="text-gray-700 dark:text-gray-300">{{ pkg.email_accounts }} E-mail Accounts</span>
               </li>
             </ul>
 
@@ -69,9 +77,11 @@ interface HostingPackage {
   description: string;
   price: string;
   price_yearly: string;
-  disk_space: number;
-  bandwidth: number;
+  disk_space_mb: number;
+  bandwidth_gb: number;
   domains: number;
+  databases: number;
+  email_accounts: number;
 }
 
 const packages = ref<HostingPackage[]>([]);

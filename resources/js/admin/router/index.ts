@@ -5,31 +5,31 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     name: 'admin-dashboard',
-    component: () => import('./pages/Dashboard.vue'),
+    component: () => import('../pages/Dashboard.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/admin/customers',
     name: 'admin-customers',
-    component: () => import('./pages/Customers.vue'),
+    component: () => import('../pages/Customers.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/admin/orders',
     name: 'admin-orders',
-    component: () => import('./pages/Orders.vue'),
+    component: () => import('../pages/Orders.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/admin/billing',
     name: 'admin-billing',
-    component: () => import('./pages/Billing.vue'),
+    component: () => import('../pages/Billing.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/admin/login',
     name: 'admin-login',
-    component: () => import('./pages/Login.vue'),
+    component: () => import('../pages/Login.vue'),
   },
 ];
 

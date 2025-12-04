@@ -18,7 +18,7 @@ services:
       - DB_CONNECTION=pgsql
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_DATABASE=${DB_DATABASE:-billing}
+      - DB_DATABASE=${DB_DATABASE:-hostforge}
       - DB_USERNAME=${DB_USERNAME:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
       - REDIS_HOST=redis
@@ -44,7 +44,7 @@ services:
     container_name: hostforge_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-billing}
+      POSTGRES_DB: ${DB_DATABASE:-hostforge}
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:

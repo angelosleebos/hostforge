@@ -33,51 +33,61 @@ Route::prefix('auth')->group(function () {
 });
 
 // Public API routes
-Route::prefix('v1')->group(function () {
-    // Hosting packages
-    Route::get('/packages', [HostingPackageController::class, 'index']);
-    Route::get('/packages/{package}', [HostingPackageController::class, 'show']);
+Route::get('/hosting-packages', [HostingPackageController::class, 'index']);
+Route::get('/hosting-packages/{package}', [HostingPackageController::class, 'show']);
 
-    // Domain management
-    Route::post('/domains/check', [DomainController::class, 'check']);
-    Route::get('/domains/pricing', [DomainController::class, 'pricing']);
+// Domain management
+Route::post('/domains/check', [DomainController::class, 'check']);
+Route::get('/domains/pricing', [DomainController::class, 'pricing']);
 
-    // Orders
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
-});
+// Orders
+Route::post('/orders', [OrderController::class, 'store']);
+Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
 
 // Admin API routes - Protected with Sanctum authentication
-Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
-    // Customer management
-    Route::get('/customers', [AdminCustomerController::class, 'index']);
-    Route::get('/customers/{customer}', [AdminCustomerController::class, 'show']);
-    Route::patch('/customers/{customer}/status', [AdminCustomerController::class, 'updateStatus']);
+Route::prefix('admin')->group(function () {
+    // Login endpoint (niet beveiligd)
+    Route::post('/login', [AuthController::class, 'login']);
+    
+    // Beveiligde admin routes
+    Route::middleware('auth:sanctum')->group(function () {
+        // Dashboard stats
+        Route::get('/dashboard/stats', [AdminOrderController::class, 'dashboardStats']);
+        
+        // Customer management
+        Route::get('/customers', [AdminCustomerController::class, 'index']);
+        Route::get('/customers/{customer}', [AdminCustomerController::class, 'show']);
+        Route::patch('/customers/{customer}/status', [AdminCustomerController::class, 'updateStatus']);
 
-    // Order management
-    Route::get('/orders', [AdminOrderController::class, 'index']);
-    Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
-    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
+        // Order management
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+        Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve']);
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
 
-    // Billing
-    Route::get('/billing', [BillingController::class, 'index']);
-    Route::get('/billing/due-orders', [BillingController::class, 'dueOrders']);
-    Route::post('/billing/orders/{order}/invoice', [BillingController::class, 'createInvoice']);
-    Route::post('/billing/orders/{order}/sync-customer', [BillingController::class, 'syncCustomer']);
-    
-    // Test endpoints for job execution (TODO: Remove in production)
-    Route::post('/test/provision/{order}', function (\App\Models\Order $order) {
-        dispatch(new \App\Jobs\ProvisionHostingJob($order));
-        return response()->json(['message' => 'Provisioning job dispatched']);
-    });
-    
-    Route::post('/test/register-domain/{domain}', function (\App\Models\Domain $domain) {
-        dispatch(new \App\Jobs\RegisterDomainJob($domain));
-        return response()->json(['message' => 'Domain registration job dispatched']);
-    });
-    
-    Route::post('/test/create-invoice/{order}', function (\App\Models\Order $order) {
-        dispatch(new \App\Jobs\CreateInvoiceJob($order));
-        return response()->json(['message' => 'Invoice creation job dispatched']);
+        // Billing
+        Route::get('/billing/stats', [BillingController::class, 'stats']);
+        Route::get('/billing/invoices', [BillingController::class, 'invoices']);
+        Route::post('/billing/generate-invoices', [BillingController::class, 'generateInvoices']);
+        Route::get('/billing', [BillingController::class, 'index']);
+        Route::get('/billing/due-orders', [BillingController::class, 'dueOrders']);
+        Route::post('/billing/orders/{order}/invoice', [BillingController::class, 'createInvoice']);
+        Route::post('/billing/orders/{order}/sync-customer', [BillingController::class, 'syncCustomer']);
+        
+        // Test endpoints for job execution (TODO: Remove in production)
+        Route::post('/test/provision/{order}', function (\App\Models\Order $order) {
+            dispatch(new \App\Jobs\ProvisionHostingJob($order));
+            return response()->json(['message' => 'Provisioning job dispatched']);
+        });
+        
+        Route::post('/test/register-domain/{domain}', function (\App\Models\Domain $domain) {
+            dispatch(new \App\Jobs\RegisterDomainJob($domain));
+            return response()->json(['message' => 'Domain registration job dispatched']);
+        });
+        
+        Route::post('/test/create-invoice/{order}', function (\App\Models\Order $order) {
+            dispatch(new \App\Jobs\CreateInvoiceJob($order));
+            return response()->json(['message' => 'Invoice creation job dispatched']);
+        });
     });
 });

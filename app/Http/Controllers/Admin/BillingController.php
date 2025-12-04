@@ -150,4 +150,99 @@ final class BillingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get billing statistics.
+     */
+    public function stats(): JsonResponse
+    {
+        try {
+            $stats = [
+                'total_revenue' => Order::whereIn('status', ['active', 'processing'])->sum('price'),
+                'monthly_revenue' => Order::whereIn('status', ['active', 'processing'])
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('price'),
+                'pending_invoices' => Order::where('status', 'pending')->count(),
+                'overdue_invoices' => Order::where('status', 'active')
+                    ->where('next_billing_date', '<', now())
+                    ->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch billing stats', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Kon statistieken niet ophalen'], 500);
+        }
+    }
+
+    /**
+     * Get list of invoices.
+     */
+    public function invoices(Request $request): JsonResponse
+    {
+        try {
+            // For now return mock data, later integrate with Moneybird API
+            $invoices = Order::with('customer', 'hostingPackage')
+                ->whereIn('status', ['active', 'processing'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            return response()->json([
+                'success' => true,
+                'data' => OrderResource::collection($invoices)->response()->getData(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch invoices', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Kon facturen niet ophalen'], 500);
+        }
+    }
+
+    /**
+     * Generate invoices for all due orders.
+     */
+    public function generateInvoices(): JsonResponse
+    {
+        try {
+            $dueOrders = Order::where('status', 'active')
+                ->where('next_billing_date', '<=', now())
+                ->get();
+
+            $generated = 0;
+            $failed = 0;
+
+            foreach ($dueOrders as $order) {
+                try {
+                    if ($order->customer->moneybird_contact_id) {
+                        // Dispatch job to create invoice
+                        dispatch(new \App\Jobs\CreateInvoiceJob($order));
+                        $generated++;
+                    } else {
+                        $failed++;
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to generate invoice', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $failed++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$generated} facturen gegenereerd, {$failed} gefaald",
+                'data' => [
+                    'generated' => $generated,
+                    'failed' => $failed,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Batch invoice generation failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Kon facturen niet genereren'], 500);
+        }
+    }
 }

@@ -5,22 +5,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('./pages/Home.vue'),
+    component: () => import('../pages/Home.vue'),
   },
   {
     path: '/hosting',
     name: 'hosting',
-    component: () => import('./pages/Hosting.vue'),
+    component: () => import('../pages/Hosting.vue'),
   },
   {
     path: '/order',
     name: 'order',
-    component: () => import('./pages/Order.vue'),
+    component: () => import('../pages/Order.vue'),
   },
   {
     path: '/order/success',
     name: 'order-success',
-    component: () => import('./pages/OrderSuccess.vue'),
+    component: () => import('../pages/OrderSuccess.vue'),
   },
 ];
 
