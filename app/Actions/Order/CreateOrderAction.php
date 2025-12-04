@@ -50,12 +50,10 @@ final class CreateOrderAction
 
             // Create domains
             foreach ($orderData->domains as $domainData) {
-                $fullDomainName = $domainData->domain_name . $domainData->tld;
-                
                 $this->domainRepository->create([
                     'order_id' => $order->id,
                     'customer_id' => $customer->id,
-                    'domain_name' => $fullDomainName,
+                    'domain_name' => $domainData->domain_name,
                     'tld' => $domainData->tld,
                     'status' => 'pending',
                 ]);

@@ -59,34 +59,43 @@ final class OrderController extends Controller
             // Execute action
             $order = $this->createOrderAction->execute($customerData, $orderData);
 
-            // Create Mollie payment using direct API
-            $paymentData = [
-                'amount' => [
-                    'currency' => 'EUR',
-                    'value' => number_format((float) $order->total, 2, '.', ''),
-                ],
-                'description' => "Bestelling #{$order->order_number}",
-                'redirectUrl' => config('app.url') . "/payment/return?order={$order->order_number}",
-                'metadata' => [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'customer_id' => $order->customer_id,
-                ],
-            ];
+            $paymentUrl = null;
 
-            // Only add webhook in production (localhost not reachable by Mollie)
-            if (!app()->environment('local')) {
-                $paymentData['webhookUrl'] = route('api.webhooks.mollie');
+            // Skip Mollie in local development if account is suspended
+            if (config('services.mollie.key') && !str_starts_with(config('services.mollie.key'), 'test_')) {
+                // Create Mollie payment using direct API
+                $paymentData = [
+                    'amount' => [
+                        'currency' => 'EUR',
+                        'value' => number_format((float) $order->total, 2, '.', ''),
+                    ],
+                    'description' => "Bestelling #{$order->order_number}",
+                    'redirectUrl' => config('app.url') . "/payment/return?order={$order->order_number}",
+                    'metadata' => [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'customer_id' => $order->customer_id,
+                    ],
+                ];
+
+                // Only add webhook in production (localhost not reachable by Mollie)
+                if (!app()->environment('local')) {
+                    $paymentData['webhookUrl'] = route('api.webhooks.mollie');
+                }
+
+                $payment = Mollie::api()->payments->create($paymentData);
+                $paymentUrl = $payment->getCheckoutUrl();
+            } else {
+                // In development with test key, return a mock URL
+                $paymentUrl = config('app.url') . "/payment/return?order={$order->order_number}&mock=true";
             }
-
-            $payment = Mollie::api()->payments->create($paymentData);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Bestelling succesvol geplaatst',
                 'data' => [
                     'order' => new OrderResource($order),
-                    'payment_url' => $payment->getCheckoutUrl(),
+                    'payment_url' => $paymentUrl,
                 ],
             ], 201);
 
