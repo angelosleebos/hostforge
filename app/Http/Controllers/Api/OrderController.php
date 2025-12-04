@@ -84,6 +84,9 @@ final class OrderController extends Controller
 
                 $payment = Mollie::api()->payments->create($paymentData);
                 $paymentUrl = $payment->getCheckoutUrl();
+                
+                // Store Mollie payment ID for status checking
+                $order->update(['mollie_payment_id' => $payment->id]);
             } catch (\Exception $e) {
                 Log::warning('Mollie payment creation failed, using mock URL', ['error' => $e->getMessage()]);
                 // Fallback to mock URL if Mollie fails
@@ -125,6 +128,31 @@ final class OrderController extends Controller
                 'success' => false,
                 'message' => 'Bestelling niet gevonden',
             ], 404);
+        }
+
+        // Check payment status with Mollie if order is still pending
+        if ($order->status === 'pending' && $order->mollie_payment_id) {
+            try {
+                $payment = Mollie::api()->payments->get($order->mollie_payment_id);
+                
+                if ($payment->isPaid()) {
+                    $order->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+                } elseif ($payment->isFailed() || $payment->isExpired()) {
+                    $order->update(['status' => 'failed']);
+                } elseif ($payment->isCanceled()) {
+                    $order->update(['status' => 'cancelled']);
+                }
+                
+                $order->refresh();
+            } catch (\Exception $e) {
+                Log::warning('Failed to check Mollie payment status', [
+                    'order_number' => $orderNumber,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return response()->json([

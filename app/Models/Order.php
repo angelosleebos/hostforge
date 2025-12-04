@@ -33,6 +33,8 @@ class Order extends Model
         'cancelled_at',
         'cancellation_reason',
         'moneybird_invoice_id',
+        'mollie_payment_id',
+        'paid_at',
     ];
 
     /**
@@ -50,6 +52,7 @@ class Order extends Model
         'provisioned_at' => 'datetime',
         'activated_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'paid_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
