@@ -1,55 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Order\ApproveOrderAction;
+use App\Actions\Order\CancelOrderAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateOrderRequest;
-use App\Jobs\CreateInvoiceJob;
-use App\Jobs\ProvisionHostingJob;
-use App\Jobs\RegisterDomainJob;
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class OrderController extends Controller
+final class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly ApproveOrderAction $approveOrderAction,
+        private readonly CancelOrderAction $cancelOrderAction,
+    ) {}
+
     /**
      * Display a listing of orders.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Order::with(['customer', 'hostingPackage', 'domains']);
+        $filters = [
+            'status' => $request->input('status'),
+            'customer_id' => $request->input('customer_id'),
+            'search' => $request->input('search'),
+        ];
 
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        // Filter by customer
-        if ($request->has('customer_id')) {
-            $query->where('customer_id', $request->input('customer_id'));
-        }
-
-        // Search
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($customerQuery) use ($search) {
-                      $customerQuery->where('name', 'like', "%{$search}%")
-                                    ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $orders = $query->latest()
-            ->paginate($request->input('per_page', 15));
+        $orders = $this->orderRepository->paginate(
+            array_filter($filters),
+            (int) $request->input('per_page', 15)
+        );
 
         return response()->json([
             'success' => true,
-            'data' => $orders,
+            'data' => OrderResource::collection($orders)->response()->getData(),
         ]);
     }
 
@@ -58,11 +50,11 @@ class OrderController extends Controller
      */
     public function show(Order $order): JsonResponse
     {
-        $order->load(['customer', 'hostingPackage', 'domains']);
+        $order = $this->orderRepository->find($order->id);
 
         return response()->json([
             'success' => true,
-            'data' => $order,
+            'data' => new OrderResource($order),
         ]);
     }
 
@@ -72,13 +64,37 @@ class OrderController extends Controller
     public function updateStatus(UpdateOrderRequest $request, Order $order): JsonResponse
     {
         try {
-            DB::beginTransaction();
-
-            $oldStatus = $order->status;
             $newStatus = $request->validated('status');
 
-            $order->update([
-                'status' => $newStatus,
+            // Handle status changes with actions
+            if ($newStatus === 'processing' && $order->status === 'pending') {
+                $order = $this->approveOrderAction->execute($order);
+            } elseif ($newStatus === 'cancelled') {
+                $order = $this->cancelOrderAction->execute($order, $request->input('reason', ''));
+            } else {
+                $order = $this->orderRepository->updateStatus($order, $newStatus);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order status bijgewerkt',
+                'data' => new OrderResource($order),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to update order status', [
+                'order_id' => $order->id,
+                'new_status' => $newStatus ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Kon order status niet bijwerken',
+            ], 500);
+        }
+    }
+}
             ]);
 
             // Trigger provisioning when approved

@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Services\MoneybirdService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class BillingController extends Controller
+final class BillingController extends Controller
 {
     public function __construct(
-        private MoneybirdService $moneybirdService
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly MoneybirdService $moneybirdService
     ) {}
 
     /**
@@ -41,15 +46,11 @@ class BillingController extends Controller
      */
     public function dueOrders(Request $request): JsonResponse
     {
-        $orders = Order::with(['customer', 'hostingPackage'])
-            ->where('status', 'active')
-            ->where('next_billing_date', '<=', now()->addDays(7))
-            ->latest('next_billing_date')
-            ->paginate($request->input('per_page', 15));
+        $orders = $this->orderRepository->getDueForInvoicing(7);
 
         return response()->json([
             'success' => true,
-            'data' => $orders,
+            'data' => OrderResource::collection($orders)->response()->getData(),
         ]);
     }
 

@@ -46,4 +46,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        // For now, all users in the users table are admins
+        // Later we can add roles/permissions
+        return true;
+    }
 }
