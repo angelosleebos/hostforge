@@ -33,6 +33,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../pages/admin/Dashboard.vue'),
   },
   {
+    path: '/admin/login',
+    name: 'admin-login',
+    component: () => import('../pages/admin/Login.vue'),
+  },
+  {
     path: '/admin/pending-customers',
     name: 'admin-pending-customers',
     component: () => import('../pages/admin/PendingCustomers.vue'),
