@@ -371,6 +371,10 @@ function showNotification(type: 'success' | 'error', message: string) {
 }
 
 onMounted(() => {
-  fetchPendingCustomers()
-})
+  // Router guard should prevent this, but double check
+  const adminToken = localStorage.getItem('admin_token');
+  if (adminToken) {
+    fetchPendingCustomers();
+  }
+});
 </script>

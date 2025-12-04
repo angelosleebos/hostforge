@@ -42,23 +42,18 @@ api.interceptors.response.use(
   async (error) => {
     console.error('API Error:', error.response?.status, error.response?.data);
     if (error.response?.status === 401) {
-      console.log('Unauthorized, removing tokens and redirecting to login');
+      console.log('Unauthorized, removing tokens');
       
-      // Determine which token to remove and where to redirect based on the request URL
+      // Determine which token to remove based on the request URL
       const requestUrl = error.config?.url || '';
       if (requestUrl.startsWith('/admin')) {
         localStorage.removeItem('admin_token');
-        if (!window.location.pathname.includes('/admin/login')) {
-          window.location.href = '/admin/login';
-        }
       } else if (requestUrl.startsWith('/customer')) {
         localStorage.removeItem('customer_token');
-        if (!window.location.pathname.includes('/customer/login')) {
-          window.location.href = '/customer/login';
-        }
       } else {
         localStorage.removeItem('auth_token');
       }
+      // Don't redirect here - let the router guard handle it
     }
     return Promise.reject(error);
   }

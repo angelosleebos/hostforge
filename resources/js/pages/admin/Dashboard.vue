@@ -221,6 +221,10 @@ function getStatusLabel(status: string): string {
 }
 
 onMounted(() => {
-  fetchDashboardData()
-})
+  // Router guard should prevent this, but double check
+  const adminToken = localStorage.getItem('admin_token');
+  if (adminToken) {
+    fetchDashboardData();
+  }
+});
 </script>

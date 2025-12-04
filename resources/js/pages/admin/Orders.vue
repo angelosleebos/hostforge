@@ -344,6 +344,10 @@ const formatDate = (date: string) => {
 };
 
 onMounted(() => {
-  loadOrders();
+  // Router guard should prevent this, but double check
+  const adminToken = localStorage.getItem('admin_token');
+  if (adminToken) {
+    loadOrders();
+  }
 });
 </script>
