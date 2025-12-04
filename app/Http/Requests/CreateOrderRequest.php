@@ -22,19 +22,23 @@ class CreateOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer.name' => ['required', 'string', 'max:255'],
+            'customer.first_name' => ['required', 'string', 'max:255'],
+            'customer.last_name' => ['required', 'string', 'max:255'],
             'customer.email' => ['required', 'email', 'max:255'],
+            'customer.company' => ['nullable', 'string', 'max:255'],
             'customer.phone' => ['nullable', 'string', 'max:50'],
             'customer.address' => ['nullable', 'string', 'max:500'],
             'customer.city' => ['nullable', 'string', 'max:100'],
             'customer.postal_code' => ['nullable', 'string', 'max:20'],
             'customer.country' => ['nullable', 'string', 'max:100'],
             
-            'hosting_package_id' => ['required', 'exists:hosting_packages,id'],
-            'billing_cycle' => ['required', 'in:monthly,quarterly,yearly'],
+            'order.hosting_package_id' => ['required', 'exists:hosting_packages,id'],
+            'order.billing_cycle' => ['required', 'in:monthly,quarterly,yearly'],
             
-            'domain.name' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i'],
-            'domain.register_domain' => ['required', 'boolean'],
+            'order.domains' => ['required', 'array', 'min:1'],
+            'order.domains.*.domain_name' => ['required', 'string', 'max:255'],
+            'order.domains.*.tld' => ['required', 'string', 'max:10'],
+            'order.domains.*.register_domain' => ['required', 'boolean'],
         ];
     }
 

@@ -29,34 +29,30 @@ final class OrderController extends Controller
     public function store(CreateOrderRequest $request): JsonResponse
     {
         try {
-            // Parse customer name
-            $customerInput = $request->validated('customer');
-            $nameParts = explode(' ', $customerInput['name'], 2);
-            $customerInput['first_name'] = $nameParts[0];
-            $customerInput['last_name'] = $nameParts[1] ?? '';
-            unset($customerInput['name']);
-
-            // Create DTOs
-            $customerData = CustomerData::from($customerInput);
-
-            // Parse domain data
-            $domainInput = $request->validated('domain');
-            $domainParts = explode('.', $domainInput['name'], 2);
+            // Get validated data
+            $validated = $request->validated();
             
-            $domainData = DomainData::from([
-                'domain_name' => $domainInput['name'],
-                'tld' => isset($domainParts[1]) ? '.' . $domainParts[1] : '',
-                'order_id' => 0, // Will be set in action
-                'customer_id' => 0, // Will be set in action
-                'status' => 'pending',
-                'register_domain' => $domainInput['register_domain'],
-            ]);
+            // Create DTOs
+            $customerData = CustomerData::from($validated['customer']);
+
+            // Parse domain data from array
+            $domains = [];
+            foreach ($validated['order']['domains'] as $domainInput) {
+                $domains[] = DomainData::from([
+                    'domain_name' => $domainInput['domain_name'] . '.' . $domainInput['tld'],
+                    'tld' => '.' . $domainInput['tld'],
+                    'order_id' => 0, // Will be set in action
+                    'customer_id' => 0, // Will be set in action
+                    'status' => 'pending',
+                    'register_domain' => $domainInput['register_domain'],
+                ]);
+            }
 
             $orderData = OrderData::from([
                 'customer_id' => 0, // Will be set in action
-                'hosting_package_id' => $request->validated('hosting_package_id'),
-                'billing_cycle' => $request->validated('billing_cycle'),
-                'domains' => DataCollection::make([$domainData]),
+                'hosting_package_id' => $validated['order']['hosting_package_id'],
+                'billing_cycle' => $validated['order']['billing_cycle'],
+                'domains' => DataCollection::make($domains),
             ]);
 
             // Execute action

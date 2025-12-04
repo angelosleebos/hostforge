@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\ContentSecurityPolicy::class,
+            \App\Http\Middleware\SecureHeaders::class,
+        ]);
+        
+        $middleware->api(append: [
+            \App\Http\Middleware\RateLimitApi::class . ':120,1', // 120 requests per minute
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

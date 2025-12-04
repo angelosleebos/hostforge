@@ -145,8 +145,11 @@ const fetchDashboardData = async () => {
       api.get('/admin/orders?per_page=10'),
     ]);
     
-    stats.value = statsResponse.data;
-    recentOrders.value = ordersResponse.data.data;
+    console.log('Dashboard stats response:', statsResponse.data);
+    console.log('Orders response:', ordersResponse.data);
+    
+    stats.value = statsResponse.data.data;
+    recentOrders.value = ordersResponse.data.data.data || [];
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
   }

@@ -10,6 +10,7 @@
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "mollie/laravel-cashier-mollie": "^2.18",
         "spatie/laravel-data": "^4.18"
     },
     "require-dev": {

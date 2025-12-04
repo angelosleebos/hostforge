@@ -136,12 +136,12 @@ final class OrderController extends Controller
     {
         try {
             $stats = [
-                'total_revenue' => Order::where('status', 'active')->sum('total_price'),
+                'total_revenue' => Order::where('status', 'active')->sum('total'),
                 'pending_orders' => Order::where('status', 'pending')->count(),
                 'active_customers' => Order::where('status', 'active')->distinct('customer_id')->count(),
                 'monthly_revenue' => Order::where('status', 'active')
                     ->whereMonth('created_at', now()->month)
-                    ->sum('total_price'),
+                    ->sum('total'),
             ];
 
             return response()->json([

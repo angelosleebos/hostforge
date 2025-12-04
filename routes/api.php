@@ -6,7 +6,10 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\HostingPackageController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +46,29 @@ Route::get('/domains/pricing', [DomainController::class, 'pricing']);
 // Orders
 Route::post('/orders', [OrderController::class, 'store']);
 Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
+
+// Payments
+Route::post('/orders/{order}/payment', [PaymentController::class, 'createPayment'])->name('api.payment.create');
+Route::post('/webhooks/mollie', [PaymentController::class, 'webhook'])->name('api.webhooks.mollie');
+
+// Customer Portal API routes
+Route::prefix('customer')->group(function () {
+    // Authentication
+    Route::post('/register', [CustomerAuthController::class, 'register']);
+    Route::post('/login', [CustomerAuthController::class, 'login']);
+    
+    // Protected customer routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [CustomerAuthController::class, 'logout']);
+        Route::get('/me', [CustomerAuthController::class, 'me']);
+        
+        // Dashboard
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index']);
+        Route::get('/orders', [CustomerDashboardController::class, 'orders']);
+        Route::get('/subscriptions', [CustomerDashboardController::class, 'subscriptions']);
+        Route::get('/plesk-login', [CustomerDashboardController::class, 'pleskLogin']);
+    });
+});
 
 // Admin API routes - Protected with Sanctum authentication
 Route::prefix('admin')->group(function () {
