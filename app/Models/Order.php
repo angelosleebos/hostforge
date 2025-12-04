@@ -21,12 +21,17 @@ class Order extends Model
         'hosting_package_id',
         'order_number',
         'status',
+        'billing_cycle',
+        'price',
         'subtotal',
         'tax',
         'total',
+        'next_billing_date',
         'approved_at',
         'provisioned_at',
         'activated_at',
+        'cancelled_at',
+        'cancellation_reason',
         'moneybird_invoice_id',
     ];
 
@@ -36,12 +41,15 @@ class Order extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'price' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'tax' => 'decimal:2',
         'total' => 'decimal:2',
+        'next_billing_date' => 'datetime',
         'approved_at' => 'datetime',
         'provisioned_at' => 'datetime',
         'activated_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

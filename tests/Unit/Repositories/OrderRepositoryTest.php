@@ -112,6 +112,9 @@ final class OrderRepositoryTest extends TestCase
             'status' => 'pending',
             'billing_cycle' => 'monthly',
             'price' => 9.99,
+            'subtotal' => 9.99,
+            'tax' => 2.10,
+            'total' => 12.09,
         ];
 
         $order = $this->repository->create($data);
@@ -128,6 +131,7 @@ final class OrderRepositoryTest extends TestCase
         $order = Order::factory()->create(['price' => 10.00]);
 
         $updated = $this->repository->update($order, ['price' => 15.00]);
+        $updated->refresh();
 
         $this->assertEquals(15.00, $updated->price);
         $this->assertDatabaseHas('orders', [
@@ -147,18 +151,28 @@ final class OrderRepositoryTest extends TestCase
 
     public function test_get_due_for_invoicing_returns_correct_orders(): void
     {
+        // Create orders with specific next_billing_date
         Order::factory()->create([
             'status' => 'active',
             'next_billing_date' => now()->addDays(5),
         ]);
+        
         Order::factory()->create([
             'status' => 'active',
             'next_billing_date' => now()->addDays(10),
         ]);
+        
+        // Pending orders should not be included
+        Order::factory()->create([
+            'status' => 'pending',
+            'next_billing_date' => now()->addDays(3),
+        ]);
 
         $result = $this->repository->getDueForInvoicing(7);
 
+        // Should only return active orders within 7 days
         $this->assertCount(1, $result);
+        $this->assertEquals('active', $result->first()->status);
     }
 
     public function test_delete_removes_order(): void

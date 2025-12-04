@@ -41,6 +41,8 @@ final class CreateOrderAction
                 'hosting_package_id' => $orderData->hosting_package_id,
                 'order_number' => $this->generateOrderNumber(),
                 'status' => 'pending',
+                'billing_cycle' => $orderData->billing_cycle,
+                'price' => $subtotal,
                 'subtotal' => $subtotal,
                 'tax' => $tax,
                 'total' => $total,

@@ -158,9 +158,11 @@ final class CustomerRepositoryTest extends TestCase
     public function test_delete_removes_customer(): void
     {
         $customer = Customer::factory()->create();
+        $customerId = $customer->id;
 
         $this->repository->delete($customer);
 
-        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
+        // Since we use soft deletes, check if deleted_at is set
+        $this->assertSoftDeleted('customers', ['id' => $customerId]);
     }
 }

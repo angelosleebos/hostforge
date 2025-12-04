@@ -21,6 +21,13 @@ final class ApproveOrderAction
 
     public function execute(Order $order): Order
     {
+        // Validate order can be approved
+        if ($order->status !== 'pending') {
+            throw new \InvalidArgumentException(
+                "Order {$order->order_number} cannot be approved. Current status: {$order->status}"
+            );
+        }
+
         return DB::transaction(function () use ($order) {
             // Update order status
             $order = $this->orderRepository->update($order, [

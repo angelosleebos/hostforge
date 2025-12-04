@@ -8,7 +8,7 @@ use App\Actions\Order\CreateOrderAction;
 use App\DataTransferObjects\CustomerData;
 use App\DataTransferObjects\DomainData;
 use App\DataTransferObjects\OrderData;
-use App\Events\OrderCreated;
+use App\Events\Order\OrderCreated;
 use App\Models\Customer;
 use App\Models\HostingPackage;
 use App\Models\Order;
@@ -93,7 +93,7 @@ final class CreateOrderActionTest extends TestCase
         ]);
         $this->assertDatabaseHas('orders', [
             'order_number' => $order->order_number,
-            'price' => 9.99,
+            'price' => 19.98, // 9.99 (hosting) + 9.99 (domain)
             'status' => 'pending',
         ]);
         $this->assertDatabaseHas('domains', [
@@ -127,6 +127,7 @@ final class CreateOrderActionTest extends TestCase
         );
 
         $orderData = new OrderData(
+            customer_id: 0,
             hosting_package_id: $hostingPackage->id,
             billing_cycle: 'monthly',
             domains: new \Spatie\LaravelData\DataCollection(DomainData::class, []),
@@ -158,6 +159,7 @@ final class CreateOrderActionTest extends TestCase
         );
 
         $orderData = new OrderData(
+            customer_id: 0,
             hosting_package_id: $hostingPackage->id,
             billing_cycle: 'yearly',
             domains: new \Spatie\LaravelData\DataCollection(DomainData::class, []),
@@ -186,6 +188,7 @@ final class CreateOrderActionTest extends TestCase
         );
 
         $orderData = new OrderData(
+            customer_id: 0,
             hosting_package_id: 99999, // Non-existent package
             billing_cycle: 'monthly',
             domains: new \Spatie\LaravelData\DataCollection(DomainData::class, []),

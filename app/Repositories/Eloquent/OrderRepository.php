@@ -82,10 +82,12 @@ final class OrderRepository implements OrderRepositoryInterface
         return $order->delete();
     }
 
-    public function getDueForInvoicing(): Collection
+    public function getDueForInvoicing(int $daysAhead = 7): Collection
     {
         return Order::with(['customer', 'hostingPackage', 'domains'])
             ->where('status', 'active')
+            ->whereNotNull('next_billing_date')
+            ->where('next_billing_date', '<=', now()->addDays($daysAhead))
             ->whereNull('moneybird_invoice_id')
             ->get();
     }

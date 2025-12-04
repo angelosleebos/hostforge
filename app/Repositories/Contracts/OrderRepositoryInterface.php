@@ -59,7 +59,7 @@ interface OrderRepositoryInterface
     /**
      * Get orders that need invoicing.
      */
-    public function getDueForInvoicing(): Collection;
+    public function getDueForInvoicing(int $daysAhead = 7): Collection;
 
     /**
      * Update order status.
