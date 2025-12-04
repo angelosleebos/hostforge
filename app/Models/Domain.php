@@ -84,7 +84,7 @@ class Domain extends Model
      */
     public function daysUntilExpiration(): ?int
     {
-        if (!$this->expires_at) {
+        if (! $this->expires_at) {
             return null;
         }
 
@@ -105,6 +105,6 @@ class Domain extends Model
     public function scopeExpiringSoon($query, int $days = 30)
     {
         return $query->where('expires_at', '<=', now()->addDays($days))
-                    ->where('expires_at', '>', now());
+            ->where('expires_at', '>', now());
     }
 }

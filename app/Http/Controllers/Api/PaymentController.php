@@ -18,9 +18,9 @@ class PaymentController extends Controller
     {
         try {
             $customer = $order->customer;
-            
+
             // Ensure customer has Mollie customer ID
-            if (!$customer->mollie_customer_id) {
+            if (! $customer->mollie_customer_id) {
                 $mollieCustomer = $customer->createAsMollieCustomer([
                     'name' => $customer->full_name,
                     'email' => $customer->email,
@@ -30,7 +30,7 @@ class PaymentController extends Controller
             // Create payment
             $payment = $customer->charge($order->total, $order->order_number, [
                 'description' => "Bestelling #{$order->order_number}",
-                'redirectUrl' => config('app.url') . "/order/success?order={$order->order_number}",
+                'redirectUrl' => config('app.url')."/order/success?order={$order->order_number}",
                 'webhookUrl' => route('api.webhooks.mollie'),
                 'metadata' => [
                     'order_id' => $order->id,
@@ -40,14 +40,14 @@ class PaymentController extends Controller
 
             // Create subscription for recurring billing
             if ($order->billing_cycle !== 'one-time') {
-                $interval = match($order->billing_cycle) {
+                $interval = match ($order->billing_cycle) {
                     'monthly' => '1 month',
                     'quarterly' => '3 months',
                     'yearly' => '1 year',
                     default => '1 month',
                 };
 
-                $customer->newSubscription('hosting', 'hosting-' . $order->hosting_package_id)
+                $customer->newSubscription('hosting', 'hosting-'.$order->hosting_package_id)
                     ->create($payment->mandateId, [
                         'description' => "Hosting: {$order->hostingPackage->name}",
                         'amount' => [
@@ -87,20 +87,20 @@ class PaymentController extends Controller
     {
         try {
             $paymentId = $request->input('id');
-            
-            if (!$paymentId) {
+
+            if (! $paymentId) {
                 return response()->json(['success' => false], 400);
             }
 
             // Process the payment
             $payment = \Mollie\Laravel\Facades\Mollie::api()->payments->get($paymentId);
-            
-            if ($payment->isPaid() && !$payment->hasRefunds() && !$payment->hasChargebacks()) {
+
+            if ($payment->isPaid() && ! $payment->hasRefunds() && ! $payment->hasChargebacks()) {
                 $orderId = $payment->metadata->order_id ?? null;
-                
+
                 if ($orderId) {
                     $order = Order::find($orderId);
-                    
+
                     if ($order && $order->status === 'pending') {
                         $order->update([
                             'status' => 'paid',

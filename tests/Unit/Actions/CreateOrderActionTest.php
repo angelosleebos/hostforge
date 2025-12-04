@@ -16,9 +16,7 @@ use App\Repositories\Contracts\CustomerRepositoryInterface;
 use App\Repositories\Contracts\DomainRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Spatie\LaravelData\DataCollection;
 use Tests\TestCase;
 
 final class CreateOrderActionTest extends TestCase
@@ -26,8 +24,11 @@ final class CreateOrderActionTest extends TestCase
     use RefreshDatabase;
 
     private CreateOrderAction $action;
+
     private CustomerRepositoryInterface $customerRepository;
+
     private OrderRepositoryInterface $orderRepository;
+
     private DomainRepositoryInterface $domainRepository;
 
     protected function setUp(): void

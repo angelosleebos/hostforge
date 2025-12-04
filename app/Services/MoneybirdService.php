@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\RequestException;
 
 class MoneybirdService
 {
     protected string $apiUrl;
+
     protected string $apiToken;
+
     protected string $administrationId;
 
     public function __construct()
@@ -22,8 +24,6 @@ class MoneybirdService
     /**
      * Create a new contact in Moneybird.
      *
-     * @param array $customerData
-     * @return array|null
      * @throws \Exception
      */
     public function createContact(array $customerData): ?array
@@ -56,15 +56,13 @@ class MoneybirdService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to create Moneybird contact: ' . $e->getMessage());
+            throw new \Exception('Failed to create Moneybird contact: '.$e->getMessage());
         }
     }
 
     /**
      * Get contact by ID.
      *
-     * @param string $contactId
-     * @return array|null
      * @throws \Exception
      */
     public function getContact(string $contactId): ?array
@@ -76,17 +74,13 @@ class MoneybirdService
                 'contact_id' => $contactId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to get Moneybird contact: ' . $e->getMessage());
+            throw new \Exception('Failed to get Moneybird contact: '.$e->getMessage());
         }
     }
 
     /**
      * Create a new sales invoice.
      *
-     * @param string $contactId
-     * @param array $orderData
-     * @param array $lineItems
-     * @return array|null
      * @throws \Exception
      */
     public function createInvoice(string $contactId, array $orderData, array $lineItems): ?array
@@ -123,16 +117,13 @@ class MoneybirdService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to create Moneybird invoice: ' . $e->getMessage());
+            throw new \Exception('Failed to create Moneybird invoice: '.$e->getMessage());
         }
     }
 
     /**
      * Send an invoice by email.
      *
-     * @param string $invoiceId
-     * @param string $email
-     * @return bool
      * @throws \Exception
      */
     public function sendInvoice(string $invoiceId, string $email): bool
@@ -157,6 +148,7 @@ class MoneybirdService
                 'invoice_id' => $invoiceId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -164,8 +156,6 @@ class MoneybirdService
     /**
      * Get invoice by ID.
      *
-     * @param string $invoiceId
-     * @return array|null
      * @throws \Exception
      */
     public function getInvoice(string $invoiceId): ?array
@@ -177,20 +167,16 @@ class MoneybirdService
                 'invoice_id' => $invoiceId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to get Moneybird invoice: ' . $e->getMessage());
+            throw new \Exception('Failed to get Moneybird invoice: '.$e->getMessage());
         }
     }
 
     /**
      * Register a payment for an invoice.
      *
-     * @param string $invoiceId
-     * @param float $amount
-     * @param string $paymentDate
-     * @return array|null
      * @throws \Exception
      */
-    public function registerPayment(string $invoiceId, float $amount, string $paymentDate = null): ?array
+    public function registerPayment(string $invoiceId, float $amount, ?string $paymentDate = null): ?array
     {
         try {
             $response = $this->makeRequest('POST', "/sales_invoices/{$invoiceId}/payments", [
@@ -212,14 +198,12 @@ class MoneybirdService
                 'invoice_id' => $invoiceId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to register payment: ' . $e->getMessage());
+            throw new \Exception('Failed to register payment: '.$e->getMessage());
         }
     }
 
     /**
      * Get default tax rate ID (21% for NL).
-     *
-     * @return string
      */
     protected function getDefaultTaxRateId(): string
     {
@@ -230,8 +214,6 @@ class MoneybirdService
 
     /**
      * Get default financial account ID.
-     *
-     * @return string
      */
     protected function getDefaultFinancialAccountId(): string
     {
@@ -242,10 +224,6 @@ class MoneybirdService
     /**
      * Make an HTTP request to Moneybird API.
      *
-     * @param string $method
-     * @param string $endpoint
-     * @param array $data
-     * @return array
      * @throws RequestException
      */
     protected function makeRequest(string $method, string $endpoint, array $data = []): array

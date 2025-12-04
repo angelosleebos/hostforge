@@ -51,7 +51,7 @@ final class AdminCustomerController extends Controller
         ]);
 
         $customer = $this->customerRepository->findOrFail($customerId);
-        
+
         $customer->update([
             'status' => $request->input('status'),
             'status_reason' => $request->input('reason'),

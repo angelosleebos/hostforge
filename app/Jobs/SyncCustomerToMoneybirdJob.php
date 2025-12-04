@@ -46,6 +46,7 @@ class SyncCustomerToMoneybirdJob implements ShouldQueue
                     'customer_id' => $this->customer->id,
                     'moneybird_contact_id' => $this->customer->moneybird_contact_id,
                 ]);
+
                 return;
             }
 

@@ -17,7 +17,7 @@ class ContentSecurityPolicy
             $viteUrl = config('app.vite_dev_server_url');
             $viteHost = parse_url($viteUrl, PHP_URL_HOST);
             $vitePort = parse_url($viteUrl, PHP_URL_PORT);
-            $viteOrigin = $viteHost . ($vitePort ? ':' . $vitePort : '');
+            $viteOrigin = $viteHost.($vitePort ? ':'.$vitePort : '');
 
             $csp = implode('; ', [
                 "default-src 'self'",

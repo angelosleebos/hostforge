@@ -24,11 +24,11 @@ final class OrderFactory extends Factory
         $subtotal = fake()->randomFloat(2, 5, 100);
         $tax = round($subtotal * 0.21, 2);
         $billingCycle = fake()->randomElement(['monthly', 'yearly']);
-        
+
         return [
             'customer_id' => Customer::factory(),
             'hosting_package_id' => HostingPackage::factory(),
-            'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+            'order_number' => 'ORD-'.strtoupper(Str::random(10)),
             'status' => 'pending',
             'billing_cycle' => $billingCycle,
             'price' => $subtotal,

@@ -2,15 +2,18 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\RequestException;
 
 class OpenProviderService
 {
     protected string $apiUrl;
+
     protected string $username;
+
     protected string $password;
+
     protected ?string $token = null;
 
     public function __construct()
@@ -23,7 +26,6 @@ class OpenProviderService
     /**
      * Authenticate with OpenProvider API and get token.
      *
-     * @return string
      * @throws \Exception
      */
     protected function getAuthToken(): string
@@ -47,7 +49,7 @@ class OpenProviderService
             $data = $response->json();
             $this->token = $data['data']['token'] ?? null;
 
-            if (!$this->token) {
+            if (! $this->token) {
                 throw new \Exception('Failed to get authentication token from OpenProvider');
             }
 
@@ -59,15 +61,13 @@ class OpenProviderService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to authenticate with OpenProvider: ' . $e->getMessage());
+            throw new \Exception('Failed to authenticate with OpenProvider: '.$e->getMessage());
         }
     }
 
     /**
      * Check if a domain is available for registration.
      *
-     * @param string $domainName
-     * @return bool
      * @throws \Exception
      */
     public function checkDomainAvailability(string $domainName): bool
@@ -81,7 +81,7 @@ class OpenProviderService
 
             $result = $response['data']['results'][0] ?? null;
 
-            if (!$result) {
+            if (! $result) {
                 throw new \Exception('Invalid response from OpenProvider');
             }
 
@@ -98,17 +98,15 @@ class OpenProviderService
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to check domain availability: ' . $e->getMessage());
+            throw new \Exception('Failed to check domain availability: '.$e->getMessage());
         }
     }
 
     /**
      * Register a new domain.
      *
-     * @param string $domainName
-     * @param array $contactData
-     * @param int $period Years (default: 1)
-     * @return array|null
+     * @param  int  $period  Years (default: 1)
+     *
      * @throws \Exception
      */
     public function registerDomain(string $domainName, array $contactData, int $period = 1): ?array
@@ -143,15 +141,13 @@ class OpenProviderService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to register domain: ' . $e->getMessage());
+            throw new \Exception('Failed to register domain: '.$e->getMessage());
         }
     }
 
     /**
      * Create a contact handle.
      *
-     * @param array $contactData
-     * @return string
      * @throws \Exception
      */
     protected function createContact(array $contactData): string
@@ -178,7 +174,7 @@ class OpenProviderService
 
             $handle = $response['data']['handle'] ?? null;
 
-            if (!$handle) {
+            if (! $handle) {
                 throw new \Exception('Failed to get contact handle from response');
             }
 
@@ -190,15 +186,13 @@ class OpenProviderService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to create contact: ' . $e->getMessage());
+            throw new \Exception('Failed to create contact: '.$e->getMessage());
         }
     }
 
     /**
      * Get domain information.
      *
-     * @param string $domainName
-     * @return array|null
      * @throws \Exception
      */
     public function getDomainInfo(string $domainName): ?array
@@ -212,16 +206,13 @@ class OpenProviderService
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to get domain info: ' . $e->getMessage());
+            throw new \Exception('Failed to get domain info: '.$e->getMessage());
         }
     }
 
     /**
      * Renew a domain.
      *
-     * @param string $domainName
-     * @param int $period
-     * @return array|null
      * @throws \Exception
      */
     public function renewDomain(string $domainName, int $period = 1): ?array
@@ -242,23 +233,20 @@ class OpenProviderService
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
-            throw new \Exception('Failed to renew domain: ' . $e->getMessage());
+            throw new \Exception('Failed to renew domain: '.$e->getMessage());
         }
     }
 
     /**
      * Update domain nameservers.
      *
-     * @param string $domainName
-     * @param array $nameservers
-     * @return bool
      * @throws \Exception
      */
     public function updateNameservers(string $domainName, array $nameservers): bool
     {
         try {
             $this->makeRequest('PUT', "/domains/{$domainName}", [
-                'name_servers' => array_map(fn($ns) => ['name' => $ns], $nameservers),
+                'name_servers' => array_map(fn ($ns) => ['name' => $ns], $nameservers),
             ]);
 
             Log::info('Nameservers updated', [
@@ -272,6 +260,7 @@ class OpenProviderService
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -279,10 +268,6 @@ class OpenProviderService
     /**
      * Make an HTTP request to OpenProvider API.
      *
-     * @param string $method
-     * @param string $endpoint
-     * @param array $data
-     * @return array
      * @throws RequestException
      */
     protected function makeRequest(string $method, string $endpoint, array $data = []): array
@@ -295,7 +280,7 @@ class OpenProviderService
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
             ])
-            ->{strtolower($method)}($this->apiUrl . $endpoint, $data);
+            ->{strtolower($method)}($this->apiUrl.$endpoint, $data);
 
         $response->throw();
 

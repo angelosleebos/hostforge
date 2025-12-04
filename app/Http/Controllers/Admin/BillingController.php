@@ -60,7 +60,7 @@ final class BillingController extends Controller
     public function createInvoice(Order $order): JsonResponse
     {
         try {
-            if (!$order->customer->moneybird_contact_id) {
+            if (! $order->customer->moneybird_contact_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Klant is nog niet gesynchroniseerd met Moneybird',
@@ -127,7 +127,7 @@ final class BillingController extends Controller
             ];
 
             $contact = $this->moneybirdService->createContact($contactData);
-            
+
             $customer->update([
                 'moneybird_contact_id' => $contact['id'],
             ]);
@@ -174,6 +174,7 @@ final class BillingController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch billing stats', ['error' => $e->getMessage()]);
+
             return response()->json(['success' => false, 'message' => 'Kon statistieken niet ophalen'], 500);
         }
     }
@@ -196,6 +197,7 @@ final class BillingController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch invoices', ['error' => $e->getMessage()]);
+
             return response()->json(['success' => false, 'message' => 'Kon facturen niet ophalen'], 500);
         }
     }
@@ -242,6 +244,7 @@ final class BillingController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Batch invoice generation failed', ['error' => $e->getMessage()]);
+
             return response()->json(['success' => false, 'message' => 'Kon facturen niet genereren'], 500);
         }
     }

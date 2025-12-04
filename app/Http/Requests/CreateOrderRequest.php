@@ -31,10 +31,10 @@ class CreateOrderRequest extends FormRequest
             'customer.city' => ['nullable', 'string', 'max:100'],
             'customer.postal_code' => ['nullable', 'string', 'max:20'],
             'customer.country' => ['nullable', 'string', 'max:100'],
-            
+
             'order.hosting_package_id' => ['required', 'exists:hosting_packages,id'],
             'order.billing_cycle' => ['required', 'in:monthly,quarterly,yearly'],
-            
+
             'order.domains' => ['required', 'array', 'min:1'],
             'order.domains.*.domain_name' => ['required', 'string', 'max:255'],
             'order.domains.*.tld' => ['required', 'string', 'max:10'],

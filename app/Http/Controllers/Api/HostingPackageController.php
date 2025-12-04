@@ -28,7 +28,7 @@ class HostingPackageController extends Controller
      */
     public function show(HostingPackage $package): JsonResponse
     {
-        if (!$package->active) {
+        if (! $package->active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Dit pakket is niet beschikbaar',

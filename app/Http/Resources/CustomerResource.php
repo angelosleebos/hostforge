@@ -21,7 +21,7 @@ class CustomerResource extends JsonResource
             'email' => $this->email,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'full_name' => $this->first_name . ' ' . $this->last_name,
+            'full_name' => $this->first_name.' '.$this->last_name,
             'company' => $this->company,
             'phone' => $this->phone,
             'address' => $this->address,
@@ -33,13 +33,13 @@ class CustomerResource extends JsonResource
             'status_reason' => $this->status_reason,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-            
+
             // External IDs (only for admin)
             $this->mergeWhen($request->user()?->isAdmin() ?? false, [
                 'plesk_user_id' => $this->plesk_user_id,
                 'moneybird_contact_id' => $this->moneybird_contact_id,
             ]),
-            
+
             // Relationships
             'orders' => OrderResource::collection($this->whenLoaded('orders')),
             'domains' => DomainResource::collection($this->whenLoaded('domains')),

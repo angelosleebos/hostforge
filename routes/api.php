@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\BillingController;
-use App\Http\Controllers\Api\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Api\Admin\AdminCustomerController;
 use App\Http\Controllers\Api\DomainController;
 use App\Http\Controllers\Api\HostingPackageController;
 use App\Http\Controllers\Api\OrderController;
@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 // Authentication routes
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
-    
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
@@ -56,12 +55,12 @@ Route::prefix('customer')->group(function () {
     // Authentication
     Route::post('/register', [CustomerAuthController::class, 'register']);
     Route::post('/login', [CustomerAuthController::class, 'login']);
-    
+
     // Protected customer routes
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [CustomerAuthController::class, 'logout']);
         Route::get('/me', [CustomerAuthController::class, 'me']);
-        
+
         // Dashboard
         Route::get('/dashboard', [CustomerDashboardController::class, 'index']);
         Route::get('/orders', [CustomerDashboardController::class, 'orders']);
@@ -74,12 +73,12 @@ Route::prefix('customer')->group(function () {
 Route::prefix('admin')->group(function () {
     // Login endpoint (niet beveiligd)
     Route::post('/login', [AuthController::class, 'login']);
-    
+
     // Beveiligde admin routes
     Route::middleware('auth:sanctum')->group(function () {
         // Dashboard stats
         Route::get('/dashboard/stats', [AdminOrderController::class, 'dashboardStats']);
-        
+
         // Customer management
         Route::get('/customers', [AdminCustomerController::class, 'index']);
         Route::get('/customers/pending', [AdminCustomerController::class, 'pending']);
@@ -100,20 +99,23 @@ Route::prefix('admin')->group(function () {
         Route::get('/billing/due-orders', [BillingController::class, 'dueOrders']);
         Route::post('/billing/orders/{order}/invoice', [BillingController::class, 'createInvoice']);
         Route::post('/billing/orders/{order}/sync-customer', [BillingController::class, 'syncCustomer']);
-        
+
         // Test endpoints for job execution (TODO: Remove in production)
         Route::post('/test/provision/{order}', function (\App\Models\Order $order) {
             dispatch(new \App\Jobs\ProvisionHostingJob($order));
+
             return response()->json(['message' => 'Provisioning job dispatched']);
         });
-        
+
         Route::post('/test/register-domain/{domain}', function (\App\Models\Domain $domain) {
             dispatch(new \App\Jobs\RegisterDomainJob($domain));
+
             return response()->json(['message' => 'Domain registration job dispatched']);
         });
-        
+
         Route::post('/test/create-invoice/{order}', function (\App\Models\Order $order) {
             dispatch(new \App\Jobs\CreateInvoiceJob($order));
+
             return response()->json(['message' => 'Invoice creation job dispatched']);
         });
     });

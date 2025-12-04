@@ -45,7 +45,7 @@ class RegisterDomainJob implements ShouldQueue
             // Check domain availability first
             $isAvailable = $openProviderService->checkDomainAvailability($this->domain->domain_name);
 
-            if (!$isAvailable) {
+            if (! $isAvailable) {
                 Log::warning('Domain not available for registration', [
                     'domain_name' => $this->domain->domain_name,
                 ]);

@@ -14,8 +14,8 @@ use App\Http\Resources\OrderResource;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Spatie\LaravelData\DataCollection;
 use Mollie\Laravel\Facades\Mollie;
+use Spatie\LaravelData\DataCollection;
 
 final class OrderController extends Controller
 {
@@ -32,7 +32,7 @@ final class OrderController extends Controller
         try {
             // Get validated data
             $validated = $request->validated();
-            
+
             // Create DTOs
             $customerData = CustomerData::from($validated['customer']);
 
@@ -40,8 +40,8 @@ final class OrderController extends Controller
             $domains = [];
             foreach ($validated['order']['domains'] as $domainInput) {
                 $domains[] = DomainData::from([
-                    'domain_name' => $domainInput['domain_name'] . '.' . $domainInput['tld'],
-                    'tld' => '.' . $domainInput['tld'],
+                    'domain_name' => $domainInput['domain_name'].'.'.$domainInput['tld'],
+                    'tld' => '.'.$domainInput['tld'],
                     'order_id' => 0, // Will be set in action
                     'customer_id' => 0, // Will be set in action
                     'status' => 'pending',
@@ -69,7 +69,7 @@ final class OrderController extends Controller
                         'value' => number_format((float) $order->total, 2, '.', ''),
                     ],
                     'description' => "Bestelling #{$order->order_number}",
-                    'redirectUrl' => config('app.url') . "/payment/return?order={$order->order_number}",
+                    'redirectUrl' => config('app.url')."/payment/return?order={$order->order_number}",
                     'metadata' => [
                         'order_id' => $order->id,
                         'order_number' => $order->order_number,
@@ -78,19 +78,19 @@ final class OrderController extends Controller
                 ];
 
                 // Only add webhook in production (localhost not reachable by Mollie)
-                if (!app()->environment('local')) {
+                if (! app()->environment('local')) {
                     $paymentData['webhookUrl'] = route('api.webhooks.mollie');
                 }
 
                 $payment = Mollie::api()->payments->create($paymentData);
                 $paymentUrl = $payment->getCheckoutUrl();
-                
+
                 // Store Mollie payment ID for status checking
                 $order->update(['mollie_payment_id' => $payment->id]);
             } catch (\Exception $e) {
                 Log::warning('Mollie payment creation failed, using mock URL', ['error' => $e->getMessage()]);
                 // Fallback to mock URL if Mollie fails
-                $paymentUrl = config('app.url') . "/payment/return?order={$order->order_number}&mock=true";
+                $paymentUrl = config('app.url')."/payment/return?order={$order->order_number}&mock=true";
             }
 
             return response()->json([
@@ -123,7 +123,7 @@ final class OrderController extends Controller
     {
         $order = $this->orderRepository->findByOrderNumber($orderNumber);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bestelling niet gevonden',
@@ -134,7 +134,7 @@ final class OrderController extends Controller
         if ($order->status === 'pending' && $order->mollie_payment_id) {
             try {
                 $payment = Mollie::api()->payments->get($order->mollie_payment_id);
-                
+
                 if ($payment->isPaid()) {
                     $order->update([
                         'status' => 'paid',
@@ -145,7 +145,7 @@ final class OrderController extends Controller
                 } elseif ($payment->isCanceled()) {
                     $order->update(['status' => 'cancelled']);
                 }
-                
+
                 $order->refresh();
             } catch (\Exception $e) {
                 Log::warning('Failed to check Mollie payment status', [

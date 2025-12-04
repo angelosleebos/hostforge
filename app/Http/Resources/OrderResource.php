@@ -28,12 +28,12 @@ class OrderResource extends JsonResource
             'activated_at' => $this->activated_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-            
+
             // Relationships
             'customer' => new CustomerResource($this->whenLoaded('customer')),
             'hosting_package' => new HostingPackageResource($this->whenLoaded('hostingPackage')),
             'domains' => DomainResource::collection($this->whenLoaded('domains')),
-            
+
             // Moneybird integration
             'moneybird_invoice_id' => $this->moneybird_invoice_id,
         ];

@@ -23,17 +23,17 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('country')->default('NL');
             $table->string('vat_number')->nullable();
-            
+
             // Status: pending, approved, suspended, cancelled
             $table->string('status')->default('pending');
-            
+
             // External IDs
             $table->string('plesk_user_id')->nullable();
             $table->string('moneybird_contact_id')->nullable();
-            
+
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index('email');
             $table->index('status');
         });

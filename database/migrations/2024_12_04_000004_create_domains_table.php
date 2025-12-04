@@ -15,23 +15,23 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            
+
             $table->string('domain_name')->unique();
             $table->string('tld'); // .com, .nl, etc.
-            
+
             // Status: pending, registered, active, suspended, expired
             $table->string('status')->default('pending');
-            
+
             // Registration details
             $table->timestamp('registered_at')->nullable();
             $table->timestamp('expires_at')->nullable();
-            
+
             // External IDs
             $table->string('openprovider_domain_id')->nullable();
             $table->string('plesk_domain_id')->nullable();
-            
+
             $table->timestamps();
-            
+
             $table->index('domain_name');
             $table->index('status');
             $table->index('customer_id');

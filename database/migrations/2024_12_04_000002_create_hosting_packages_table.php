@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('billing_period')->default('monthly'); // monthly, yearly
-            
+
             // Package limits
             $table->integer('disk_space_mb')->default(1000); // MB
             $table->integer('bandwidth_gb')->default(10); // GB per month
@@ -25,10 +25,10 @@ return new class extends Migration
             $table->integer('databases')->default(1);
             $table->integer('domains')->default(1);
             $table->integer('subdomains')->default(5);
-            
+
             $table->boolean('active')->default(true);
             $table->timestamps();
-            
+
             $table->index('active');
         });
     }

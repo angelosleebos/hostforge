@@ -2,17 +2,22 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\RequestException;
 
 class PleskService
 {
     protected string $host;
+
     protected string $username;
+
     protected string $password;
+
     protected string $port;
+
     protected string $protocol;
+
     protected string $baseUrl;
 
     public function __construct()
@@ -28,8 +33,6 @@ class PleskService
     /**
      * Create a new customer in Plesk.
      *
-     * @param array $customerData
-     * @return array|null
      * @throws \Exception
      */
     public function createCustomer(array $customerData): ?array
@@ -55,17 +58,13 @@ class PleskService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to create Plesk customer: ' . $e->getMessage());
+            throw new \Exception('Failed to create Plesk customer: '.$e->getMessage());
         }
     }
 
     /**
      * Create a new domain in Plesk.
      *
-     * @param string $clientId
-     * @param string $domainName
-     * @param array $options
-     * @return array|null
      * @throws \Exception
      */
     public function createDomain(string $clientId, string $domainName, array $options = []): ?array
@@ -93,15 +92,12 @@ class PleskService
                 'error' => $e->getMessage(),
                 'response' => $e->response->json() ?? null,
             ]);
-            throw new \Exception('Failed to create Plesk domain: ' . $e->getMessage());
+            throw new \Exception('Failed to create Plesk domain: '.$e->getMessage());
         }
     }
 
     /**
      * Suspend a domain in Plesk.
-     *
-     * @param string $domainId
-     * @return bool
      */
     public function suspendDomain(string $domainId): bool
     {
@@ -118,15 +114,13 @@ class PleskService
                 'domain_id' => $domainId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Activate a domain in Plesk.
-     *
-     * @param string $domainId
-     * @return bool
      */
     public function activateDomain(string $domainId): bool
     {
@@ -143,15 +137,13 @@ class PleskService
                 'domain_id' => $domainId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Delete a domain from Plesk.
-     *
-     * @param string $domainId
-     * @return bool
      */
     public function deleteDomain(string $domainId): bool
     {
@@ -166,6 +158,7 @@ class PleskService
                 'domain_id' => $domainId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -173,10 +166,6 @@ class PleskService
     /**
      * Make an HTTP request to Plesk API.
      *
-     * @param string $method
-     * @param string $endpoint
-     * @param array $data
-     * @return array
      * @throws RequestException
      */
     protected function makeRequest(string $method, string $endpoint, array $data = []): array
@@ -187,7 +176,7 @@ class PleskService
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
             ])
-            ->{strtolower($method)}($this->baseUrl . $endpoint, $data);
+            ->{strtolower($method)}($this->baseUrl.$endpoint, $data);
 
         $response->throw();
 
@@ -196,9 +185,6 @@ class PleskService
 
     /**
      * Generate a unique login from email.
-     *
-     * @param string $email
-     * @return string
      */
     protected function generateLogin(string $email): string
     {
@@ -207,26 +193,21 @@ class PleskService
         $username = strtolower($username);
 
         // Add random suffix to ensure uniqueness
-        return substr($username, 0, 10) . rand(100, 999);
+        return substr($username, 0, 10).rand(100, 999);
     }
 
     /**
      * Generate FTP login from domain.
-     *
-     * @param string $domain
-     * @return string
      */
     protected function generateFtpLogin(string $domain): string
     {
         $domain = str_replace(['.', '-'], '', $domain);
+
         return strtolower(substr($domain, 0, 12));
     }
 
     /**
      * Generate a secure password.
-     *
-     * @param int $length
-     * @return string
      */
     protected function generateSecurePassword(int $length = 16): string
     {

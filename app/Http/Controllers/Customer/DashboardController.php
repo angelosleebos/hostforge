@@ -14,7 +14,7 @@ class DashboardController extends Controller
     public function index(Request $request): JsonResponse
     {
         $customer = $request->user('customer');
-        
+
         $orders = $customer->orders()
             ->with(['hostingPackage', 'domains'])
             ->latest()
@@ -41,7 +41,7 @@ class DashboardController extends Controller
     public function orders(Request $request): JsonResponse
     {
         $customer = $request->user('customer');
-        
+
         $orders = $customer->orders()
             ->with(['hostingPackage', 'domains'])
             ->latest()
@@ -59,7 +59,7 @@ class DashboardController extends Controller
     public function subscriptions(Request $request): JsonResponse
     {
         $customer = $request->user('customer');
-        
+
         $subscriptions = $customer->subscriptions()
             ->with('items')
             ->get();
@@ -77,7 +77,7 @@ class DashboardController extends Controller
     {
         $customer = $request->user('customer');
 
-        if (!$customer->plesk_user_id) {
+        if (! $customer->plesk_user_id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Geen Plesk account gekoppeld',

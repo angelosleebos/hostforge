@@ -45,7 +45,7 @@ class ProvisionHostingJob implements ShouldQueue
             $domain = $this->order->domains->first();
 
             // Create Plesk customer if not exists
-            if (!$customer->plesk_user_id) {
+            if (! $customer->plesk_user_id) {
                 $pleskUser = $pleskService->createCustomer([
                     'name' => "{$customer->first_name} {$customer->last_name}",
                     'email' => $customer->email,

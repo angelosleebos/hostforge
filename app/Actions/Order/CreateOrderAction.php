@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Order;
 
 use App\DataTransferObjects\CustomerData;
-use App\DataTransferObjects\DomainData;
 use App\DataTransferObjects\OrderData;
 use App\Events\Order\OrderCreated;
 use App\Models\Order;
@@ -68,7 +67,7 @@ final class CreateOrderAction
 
     private function generateOrderNumber(): string
     {
-        return 'HF-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+        return 'HF-'.date('Ymd').'-'.strtoupper(Str::random(6));
     }
 
     private function calculateSubtotal(OrderData $orderData): float

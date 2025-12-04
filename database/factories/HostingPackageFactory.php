@@ -19,7 +19,7 @@ final class HostingPackageFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true) . ' Hosting',
+            'name' => fake()->words(3, true).' Hosting',
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(2, 5, 50),
             'price_yearly' => fake()->randomFloat(2, 50, 500),

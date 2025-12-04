@@ -20,7 +20,7 @@ final class OrderRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new OrderRepository();
+        $this->repository = new OrderRepository;
     }
 
     public function test_find_returns_order_with_relationships(): void
@@ -87,7 +87,7 @@ final class OrderRepositoryTest extends TestCase
         $result = $this->repository->getByCustomer($customer->id);
 
         $this->assertCount(4, $result);
-        $this->assertTrue($result->every(fn($order) => $order->customer_id === $customer->id));
+        $this->assertTrue($result->every(fn ($order) => $order->customer_id === $customer->id));
     }
 
     public function test_get_by_status_returns_filtered_orders(): void
@@ -156,12 +156,12 @@ final class OrderRepositoryTest extends TestCase
             'status' => 'active',
             'next_billing_date' => now()->addDays(5),
         ]);
-        
+
         Order::factory()->create([
             'status' => 'active',
             'next_billing_date' => now()->addDays(10),
         ]);
-        
+
         // Pending orders should not be included
         Order::factory()->create([
             'status' => 'pending',

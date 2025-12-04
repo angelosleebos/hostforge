@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Actions;
 
 use App\Actions\Order\ApproveOrderAction;
-use App\Events\OrderApproved;
 use App\Jobs\CreateInvoiceJob;
 use App\Jobs\ProvisionHostingJob;
-use App\Jobs\RegisterDomainJob;
 use App\Jobs\SyncCustomerToMoneybirdJob;
 use App\Models\Order;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -22,6 +19,7 @@ final class ApproveOrderActionTest extends TestCase
     use RefreshDatabase;
 
     private ApproveOrderAction $action;
+
     private OrderRepositoryInterface $orderRepository;
 
     protected function setUp(): void
@@ -57,7 +55,7 @@ final class ApproveOrderActionTest extends TestCase
         $order = Order::factory()->create([
             'status' => 'pending',
         ]);
-        
+
         // Load domains relationship
         $order->load('domains');
 
@@ -71,7 +69,7 @@ final class ApproveOrderActionTest extends TestCase
     public function test_throws_exception_for_already_processed_order(): void
     {
         Queue::fake();
-        
+
         $order = Order::factory()->create([
             'status' => 'processing',
         ]);
@@ -84,7 +82,7 @@ final class ApproveOrderActionTest extends TestCase
     public function test_throws_exception_for_cancelled_order(): void
     {
         Queue::fake();
-        
+
         $order = Order::factory()->create([
             'status' => 'cancelled',
         ]);

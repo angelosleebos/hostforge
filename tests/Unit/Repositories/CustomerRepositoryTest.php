@@ -18,7 +18,7 @@ final class CustomerRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new CustomerRepository();
+        $this->repository = new CustomerRepository;
     }
 
     public function test_find_returns_customer_with_relationships(): void

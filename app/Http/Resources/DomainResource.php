@@ -25,7 +25,7 @@ class DomainResource extends JsonResource
             'expires_at' => $this->expires_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-            
+
             // External IDs (only for admin)
             $this->mergeWhen($request->user()?->isAdmin() ?? false, [
                 'openprovider_domain_id' => $this->openprovider_domain_id,

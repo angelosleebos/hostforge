@@ -24,8 +24,8 @@ class HostingPackageResource extends JsonResource
             'price_yearly' => number_format((float) $this->price_yearly, 2),
             'billing_period' => $this->billing_period,
             'features' => [
-                'disk_space' => $this->disk_space_mb . ' MB',
-                'bandwidth' => $this->bandwidth_gb . ' GB',
+                'disk_space' => $this->disk_space_mb.' MB',
+                'bandwidth' => $this->bandwidth_gb.' GB',
                 'email_accounts' => $this->email_accounts,
                 'databases' => $this->databases,
                 'domains' => $this->domains,

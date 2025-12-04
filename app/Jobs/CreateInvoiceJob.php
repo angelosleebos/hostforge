@@ -43,15 +43,15 @@ class CreateInvoiceJob implements ShouldQueue
             $customer = $this->order->customer;
 
             // Ensure customer is synced to Moneybird first
-            if (!$customer->moneybird_contact_id) {
+            if (! $customer->moneybird_contact_id) {
                 Log::info('Customer not synced to Moneybird, syncing now');
                 dispatch(new SyncCustomerToMoneybirdJob($customer));
-                
+
                 // Wait for sync to complete (in a real scenario, we'd use job chaining)
                 sleep(2);
                 $customer->refresh();
-                
-                if (!$customer->moneybird_contact_id) {
+
+                if (! $customer->moneybird_contact_id) {
                     throw new \Exception('Customer sync to Moneybird failed');
                 }
             }

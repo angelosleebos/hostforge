@@ -68,7 +68,7 @@ class AuthController extends Controller
 
         $customer = Customer::where('email', $validated['email'])->first();
 
-        if (!$customer || !Hash::check($validated['password'], $customer->password)) {
+        if (! $customer || ! Hash::check($validated['password'], $customer->password)) {
             throw ValidationException::withMessages([
                 'email' => ['De opgegeven inloggegevens zijn onjuist.'],
             ]);

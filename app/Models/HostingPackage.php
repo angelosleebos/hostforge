@@ -68,7 +68,7 @@ class HostingPackage extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '€' . number_format($this->price, 2, ',', '.');
+        return '€'.number_format($this->price, 2, ',', '.');
     }
 
     /**
@@ -77,9 +77,10 @@ class HostingPackage extends Model
     public function getFormattedDiskSpaceAttribute(): string
     {
         if ($this->disk_space_mb >= 1024) {
-            return round($this->disk_space_mb / 1024, 1) . ' GB';
+            return round($this->disk_space_mb / 1024, 1).' GB';
         }
-        return $this->disk_space_mb . ' MB';
+
+        return $this->disk_space_mb.' MB';
     }
 
     /**
@@ -87,6 +88,6 @@ class HostingPackage extends Model
      */
     public function getFormattedBandwidthAttribute(): string
     {
-        return $this->bandwidth_gb . ' GB';
+        return $this->bandwidth_gb.' GB';
     }
 }
