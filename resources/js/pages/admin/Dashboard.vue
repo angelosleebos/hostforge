@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '../../api'
 
 const router = useRouter()
 
@@ -196,8 +196,8 @@ async function fetchDashboardData() {
   try {
     loading.value = true
     const [statsResponse, ordersResponse] = await Promise.all([
-      axios.get('/api/admin/dashboard/stats'),
-      axios.get('/api/admin/orders?per_page=5&sort=-created_at')
+      api.get('/admin/dashboard/stats'),
+      api.get('/admin/orders?per_page=5&sort=-created_at')
     ])
 
     stats.value = statsResponse.data.data

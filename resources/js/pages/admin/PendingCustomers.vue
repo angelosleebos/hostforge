@@ -229,7 +229,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '../../api'
 
 const router = useRouter()
 
@@ -275,7 +275,7 @@ async function fetchPendingCustomers() {
 
   try {
     loading.value = true
-    const response = await axios.get('/api/admin/customers/pending')
+    const response = await api.get('/admin/customers/pending')
     customers.value = response.data.data
   } catch (error) {
     showNotification('error', 'Fout bij ophalen van klanten')
@@ -312,7 +312,7 @@ async function approveCustomer() {
     processing.value = true
     processingCustomerId.value = selectedCustomer.value.id
 
-    await axios.patch(`/api/admin/customers/${selectedCustomer.value.id}/status`, {
+    await api.patch(`/admin/customers/${selectedCustomer.value.id}/status`, {
       status: 'approved'
     })
 
@@ -338,9 +338,9 @@ async function rejectCustomer() {
     processing.value = true
     processingCustomerId.value = selectedCustomer.value.id
 
-    await axios.patch(`/api/admin/customers/${selectedCustomer.value.id}/status`, {
+    await api.patch(`/admin/customers/${selectedCustomer.value.id}/status`, {
       status: 'rejected',
-      reason: rejectionReason.value
+      status_reason: rejectionReason.value
     })
 
     showNotification('success', `${selectedCustomer.value.full_name} is afgewezen`)
