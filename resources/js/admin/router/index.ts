@@ -39,16 +39,20 @@ const router = createRouter({
 });
 
 // Navigation guard for authentication
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('auth_token');
-  
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem('admin_token')
+
   if (to.meta.requiresAuth && !token) {
-    next({ name: 'admin-login' });
+    next({
+      name: 'admin-login',
+      query: { redirect: to.fullPath },
+    })
   } else if (to.name === 'admin-login' && token) {
-    next({ name: 'admin-dashboard' });
+    const redirect = (to.query.redirect as string) || '/admin'
+    next(redirect)
   } else {
-    next();
+    next()
   }
-});
+})
 
 export default router;

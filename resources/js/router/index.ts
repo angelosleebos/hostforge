@@ -70,7 +70,7 @@ const router = createRouter({
 });
 
 // Navigation guard to check auth
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // Check if route requires admin auth
   if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
     const adminToken = localStorage.getItem('admin_token');

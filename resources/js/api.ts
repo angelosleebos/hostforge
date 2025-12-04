@@ -1,62 +1,74 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosInstance, type AxiosError } from 'axios'
+
+export interface ApiError {
+  message: string
+  status: number
+  errors?: Record<string, string[]>
+}
 
 const api: AxiosInstance = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
-  withCredentials: true,
-});
+  withCredentials: false, // Use Bearer tokens only
+  timeout: 30000,
+})
 
 // Request interceptor for API calls
 api.interceptors.request.use(
   (config) => {
-    // Check if this is an admin or customer request
-    const isAdminRequest = config.url?.startsWith('/admin');
-    const isCustomerRequest = config.url?.startsWith('/customer');
-    
-    let token = null;
+    const url = config.url || ''
+    const isAdminRequest = url.startsWith('/admin')
+    const isCustomerRequest = url.startsWith('/customer')
+
+    let token: string | null = null
     if (isAdminRequest) {
-      token = localStorage.getItem('admin_token');
+      token = localStorage.getItem('admin_token')
     } else if (isCustomerRequest) {
-      token = localStorage.getItem('customer_token');
+      token = localStorage.getItem('customer_token')
     } else {
-      // Fallback to generic auth_token for other requests
-      token = localStorage.getItem('auth_token');
+      token = localStorage.getItem('auth_token')
     }
-    
+
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
-    return config;
+    return config
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  (error) => Promise.reject(error)
+)
 
 // Response interceptor for API calls
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data);
-    if (error.response?.status === 401) {
-      console.log('Unauthorized, removing tokens');
-      
-      // Determine which token to remove based on the request URL
-      const requestUrl = error.config?.url || '';
-      if (requestUrl.startsWith('/admin')) {
-        localStorage.removeItem('admin_token');
-      } else if (requestUrl.startsWith('/customer')) {
-        localStorage.removeItem('customer_token');
-      } else {
-        localStorage.removeItem('auth_token');
-      }
-      // Don't redirect here - let the router guard handle it
+  async (error: AxiosError) => {
+    const apiError: ApiError = {
+      message: 'An error occurred',
+      status: error.response?.status || 500,
     }
-    return Promise.reject(error);
-  }
-);
 
-export default api;
+    if (error.response?.data) {
+      const data = error.response.data as any
+      apiError.message = data.message || apiError.message
+      apiError.errors = data.errors
+    }
+
+    if (error.response?.status === 401) {
+      const url = error.config?.url || ''
+      if (url.startsWith('/admin')) {
+        localStorage.removeItem('admin_token')
+        localStorage.removeItem('admin')
+      } else if (url.startsWith('/customer')) {
+        localStorage.removeItem('customer_token')
+      } else {
+        localStorage.removeItem('auth_token')
+      }
+    }
+
+    return Promise.reject(apiError)
+  }
+)
+
+export default api

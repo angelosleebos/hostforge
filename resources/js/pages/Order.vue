@@ -148,7 +148,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import api from '../api';
 
 interface HostingPackage {
@@ -157,7 +157,6 @@ interface HostingPackage {
   price: string;
 }
 
-const router = useRouter();
 const route = useRoute();
 
 const packages = ref<HostingPackage[]>([]);
