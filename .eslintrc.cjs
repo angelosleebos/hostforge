@@ -14,10 +14,17 @@ module.exports = {
   ],
   plugins: [],
   rules: {
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'vue/multi-word-component-names': 'off',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],.
+
+
+
+
+
+
+       ,
+    'vue4/multi-word-component-names': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
-    'import/order': [
+    'impo /order': [
       'warn',
       {
         'newlines-between': 'always',
