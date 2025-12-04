@@ -22,6 +22,11 @@ const routes: RouteRecordRaw[] = [
     name: 'order-success',
     component: () => import('../pages/OrderSuccess.vue'),
   },
+  {
+    path: '/payment/return',
+    name: 'payment-return',
+    component: () => import('../pages/PaymentReturn.vue'),
+  },
 ];
 
 const router = createRouter({

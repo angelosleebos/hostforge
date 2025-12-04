@@ -211,13 +211,14 @@ const handleSubmit = async () => {
       },
     });
 
-    router.push({ 
-      name: 'order-success', 
-      query: { order: response.data.data.order_number } 
-    });
+    // Redirect to Mollie checkout
+    if (response.data.data.payment_url) {
+      window.location.href = response.data.data.payment_url;
+    } else {
+      throw new Error('Geen betaal-URL ontvangen');
+    }
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Er is een fout opgetreden. Probeer het opnieuw.';
-  } finally {
     submitting.value = false;
   }
 };

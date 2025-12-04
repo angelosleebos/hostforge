@@ -15,6 +15,7 @@ use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Spatie\LaravelData\DataCollection;
+use Mollie\Laravel\Facades\Mollie;
 
 final class OrderController extends Controller
 {
@@ -58,10 +59,40 @@ final class OrderController extends Controller
             // Execute action
             $order = $this->createOrderAction->execute($customerData, $orderData);
 
+            // Create Mollie payment
+            $customer = $order->customer;
+            
+            // Ensure customer has Mollie customer ID
+            if (!$customer->mollie_customer_id) {
+                $customer->createAsMollieCustomer([
+                    'name' => $customer->full_name,
+                    'email' => $customer->email,
+                ]);
+            }
+
+            // Create payment using Mollie Cashier
+            // Amount should be in cents format for Mollie
+            $amountInCents = (int) round($order->total * 100);
+            
+            $payment = $customer
+                ->newFirstPaymentChargeThroughCheckout()
+                ->amount($amountInCents, 'EUR')
+                ->description("Bestelling #{$order->order_number}")
+                ->redirectUrl(config('app.url') . "/payment/return?order={$order->order_number}")
+                ->webhookUrl(route('api.webhooks.mollie'))
+                ->metadata([
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ])
+                ->create();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Bestelling succesvol geplaatst',
-                'data' => new OrderResource($order),
+                'data' => [
+                    'order' => new OrderResource($order),
+                    'payment_url' => $payment->getCheckoutUrl(),
+                ],
             ], 201);
 
         } catch (\Exception $e) {
