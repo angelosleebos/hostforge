@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostforge-worker
+  namespace: hostforge
+  labels:
+    app: hostforge
+    component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hostforge
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: hostforge
+        component: worker
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: worker
+        image: ghcr.io/angelosleebos/hostforge:latest
+        imagePullPolicy: Always
+        command:
+        - php
+        - artisan
+        - queue:work
+        - --sleep=3
+        - --tries=3
+        - --max-time=3600
+        envFrom:
+        - configMapRef:
+            name: hostforge-config
+        - secretRef:
+            name: hostforge-secrets
+        volumeMounts:
+        - name: storage
+          mountPath: /var/www/storage
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: hostforge-storage-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostforge-scheduler
+  namespace: hostforge
+  labels:
+    app: hostforge
+    component: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hostforge
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: hostforge
+        component: scheduler
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: scheduler
+        image: ghcr.io/angelosleebos/hostforge:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            php artisan schedule:run --verbose --no-interaction
+            sleep 60
+          done
+        envFrom:
+        - configMapRef:
+            name: hostforge-config
+        - secretRef:
+            name: hostforge-secrets
+        volumeMounts:
+        - name: storage
+          mountPath: /var/www/storage
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: hostforge-storage-pvc

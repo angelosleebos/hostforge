@@ -1,0 +1,46 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hostforge-app-pdb
+  namespace: hostforge
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: hostforge
+      component: app
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: hostforge-quota
+  namespace: hostforge
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "5"
+    services.loadbalancers: "1"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: hostforge-limitrange
+  namespace: hostforge
+spec:
+  limits:
+  - max:
+      cpu: "2"
+      memory: 2Gi
+    min:
+      cpu: 50m
+      memory: 64Mi
+    default:
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:
+      cpu: 200m
+      memory: 256Mi
+    type: Container

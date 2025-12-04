@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostforge_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - hostforge_network
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-billing}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  nginx:
+    image: nginx:alpine
+    container_name: hostforge_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - hostforge_network
+    depends_on:
+      - app
+
+  db:
+    image: postgres:16-alpine
+    container_name: hostforge_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-billing}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - hostforge_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: hostforge_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - hostforge_network
+
+networks:
+  hostforge_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

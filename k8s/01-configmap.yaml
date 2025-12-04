@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hostforge-config
+  namespace: hostforge
+data:
+  APP_NAME: "HostForge"
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_TIMEZONE: "Europe/Amsterdam"
+  APP_LOCALE: "nl"
+  APP_FALLBACK_LOCALE: "en"
+  LOG_CHANNEL: "stdout"
+  LOG_LEVEL: "info"
+  
+  DB_CONNECTION: "pgsql"
+  DB_HOST: "hostforge-postgresql"
+  DB_PORT: "5432"
+  DB_DATABASE: "hostforge"
+  
+  CACHE_STORE: "redis"
+  SESSION_DRIVER: "redis"
+  QUEUE_CONNECTION: "redis"
+  
+  REDIS_HOST: "hostforge-redis"
+  REDIS_PORT: "6379"
+  
+  PLESK_PORT: "8443"
+  PLESK_PROTOCOL: "https"
+  
+  OPENPROVIDER_API_URL: "https://api.openprovider.eu"
+  MONEYBIRD_API_URL: "https://moneybird.com/api/v2"

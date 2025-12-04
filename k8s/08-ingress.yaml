@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hostforge-ingress
+  namespace: hostforge
+  annotations:
+    # Traefik specific annotations (k3d uses Traefik by default)
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    # Enable rate limiting
+    traefik.ingress.kubernetes.io/router.middlewares: hostforge-ratelimit@kubernetescrd
+    # SSL redirect (if using HTTPS)
+    # traefik.ingress.kubernetes.io/redirect-entry-point: https
+    # traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: hostforge.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hostforge-app
+            port:
+              number: 80
+  # Uncomment for HTTPS
+  # tls:
+  # - hosts:
+  #   - hostforge.local
+  #   secretName: hostforge-tls
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: ratelimit
+  namespace: hostforge
+spec:
+  rateLimit:
+    average: 100
+    burst: 50
+    period: 1m
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: hostforge
+spec:
+  headers:
+    frameDeny: true
+    browserXssFilter: true
+    contentTypeNosniff: true
+    referrerPolicy: "strict-origin-when-cross-origin"
+    customResponseHeaders:
+      X-Frame-Options: "SAMEORIGIN"
+      X-Content-Type-Options: "nosniff"
+      X-XSS-Protection: "1; mode=block"
