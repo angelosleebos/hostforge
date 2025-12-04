@@ -48,7 +48,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "5432:5432"
+      - "54320:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -59,7 +59,7 @@ services:
     container_name: hostforge_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "63790:6379"
     networks:
       - hostforge_network
 

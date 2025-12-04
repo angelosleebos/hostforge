@@ -47,6 +47,7 @@ return [
         'password' => env('PLESK_PASSWORD'),
         'port' => env('PLESK_PORT', '8443'),
         'protocol' => env('PLESK_PROTOCOL', 'https'),
+        'default_ip' => env('PLESK_DEFAULT_IP'),
     ],
 
     /*
@@ -60,6 +61,7 @@ return [
         'username' => env('OPENPROVIDER_USERNAME'),
         'password' => env('OPENPROVIDER_PASSWORD'),
         'api_token' => env('OPENPROVIDER_API_TOKEN'),
+        'default_ns_group' => env('OPENPROVIDER_NS_GROUP', 'default'),
     ],
 
     /*

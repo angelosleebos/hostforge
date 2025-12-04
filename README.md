@@ -1,6 +1,6 @@
 # HostForge - Webhosting Billing Platform
 
-Een professioneel webhosting billing platform gebouwd met Laravel 11, Vue.js 3 en integraties met Plesk, OpenProvider en Moneybird.
+Een professioneel webhosting billing platform gebouwd met Laravel 11, Vue.js 3 en integraties met Plesk, OpenProvider en Moneybird voor DWSD Groep - Domein Discounter.
 
 ## 🚀 Features
 
@@ -8,10 +8,21 @@ Een professioneel webhosting billing platform gebouwd met Laravel 11, Vue.js 3 e
 - **Admin Panel**: Beheer klanten, orders en provisioning
 - **API Integraties**:
   - **Plesk API**: Automatische provisioning van users en domeinen
-  - **OpenProvider API**: Domeinregistratie
-  - **Moneybird API**: Automatische facturering
+  - **OpenProvider API**: Domeinregistratie en management
+  - **Moneybird API**: Automatische facturering en klant synchronisatie
+- **Background Jobs**: Queue-based processing voor provisioning
 - **Security First**: Multi-stage Docker builds, non-root containers, security headers
 - **Kubernetes Ready**: Complete k3d/Kubernetes manifests met auto-scaling
+
+## 💰 Hosting Pakketten
+
+| Pakket | Maandcontract | Jaarcontract (p/m) | Disk Space | Bandwidth |
+|--------|---------------|-------------------|------------|-----------|
+| **Startup** | €19,99 | €14,99 | 5 GB | 50 GB |
+| **Plus** | €39,99 | €34,99 | 20 GB | 200 GB |
+| **Premium** | €79,99 | €74,99 | 50 GB | 500 GB |
+
+*Tarieven van [De Web Developer](https://www.dewebdeveloper.nl/diensten/onderhoudspakketten/)*
 
 ## 📋 Requirements
 
@@ -116,18 +127,190 @@ Voeg de volgende secrets toe aan je GitHub repository:
 ### Workflow
 
 1. **Order Plaatsen**: Klant bestelt via public webpagina
-2. **Admin Approval**: Admin beoordeelt en accepteert order
-3. **Provisioning**:
-   - Plesk: User + domein aanmaken
-   - OpenProvider: Domein registreren
-   - Moneybird: Factuur aanmaken en versturen
+2. **Admin Approval**: Admin beoordeelt en accepteert order (status: pending → processing)
+3. **Provisioning** (automatisch via background jobs):
+   - `ProvisionHostingJob`: Plesk user + domein aanmaken
+   - `RegisterDomainJob`: Domein registreren via OpenProvider
+   - `CreateInvoiceJob`: Factuur aanmaken in Moneybird
+   - `SyncCustomerToMoneybirdJob`: Klant synchroniseren naar Moneybird
 4. **Activatie**: Order status → active
+
+### Background Jobs
+
+De applicatie gebruikt Laravel Queues met Redis voor asynchrone verwerking:
+
+```bash
+# Queue worker starten (Development)
+docker-compose exec app php artisan queue:work --verbose
+
+# Queue worker met supervisor (Production - in Kubernetes)
+supervisord -c /etc/supervisor/supervisord.conf
+```
+
+**Beschikbare Jobs:**
+
+- `ProvisionHostingJob`: Creëert Plesk customer en subscription
+- `RegisterDomainJob`: Registreert domein bij OpenProvider
+- `CreateInvoiceJob`: Maakt factuur aan in Moneybird
+- `SyncCustomerToMoneybirdJob`: Synct klant naar Moneybird
+
+**Retry Policy:**
+- Tries: 3 attempts
+- Backoff: 30-120 seconden tussen retries
+- Failed jobs worden gelogd voor manual review
 
 ### Service Classes
 
 - **PleskService**: Beheer Plesk customers en domains
 - **OpenProviderService**: Domein registratie en management
 - **MoneybirdService**: Contact en factuur management
+
+## 📡 API Endpoints
+
+### Authentication (`/api/auth`)
+
+**Login**
+```bash
+POST /api/auth/login
+Body: {
+  "email": "admin@hostforge.dev",
+  "password": "password"
+}
+
+Response: {
+  "success": true,
+  "message": "Succesvol ingelogd",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@hostforge.dev"
+    },
+    "token": "1|xxxxxxxxxxxxx"
+  }
+}
+```
+
+**Get Current User** (Protected)
+```bash
+GET /api/auth/me
+Headers: {
+  "Authorization": "Bearer {token}"
+}
+
+Response: {
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@hostforge.dev"
+  }
+}
+```
+
+**Logout** (Protected)
+```bash
+POST /api/auth/logout
+Headers: {
+  "Authorization": "Bearer {token}"
+}
+
+Response: {
+  "success": true,
+  "message": "Succesvol uitgelogd"
+}
+```
+
+**Revoke All Tokens** (Protected)
+```bash
+POST /api/auth/revoke-all
+Headers: {
+  "Authorization": "Bearer {token}"
+}
+
+Response: {
+  "success": true,
+  "message": "Alle tokens zijn ingetrokken"
+}
+```
+
+### Public API (`/api/v1`)
+
+**Hosting Packages**
+```bash
+GET  /api/v1/packages              # Lijst alle actieve pakketten
+GET  /api/v1/packages/{id}         # Details van pakket
+```
+
+**Domain Management**
+```bash
+POST /api/v1/domains/check         # Check domein beschikbaarheid
+     Body: {"domain": "example.nl"}
+     
+GET  /api/v1/domains/pricing       # Domein prijzen ophalen
+```
+
+**Orders**
+```bash
+POST /api/v1/orders                # Nieuwe order plaatsen
+     Body: {
+       "customer": {
+         "name": "Jan Jansen",
+         "email": "jan@example.nl",
+         "phone": "0612345678",
+         "address": "Straat 1",
+         "city": "Amsterdam",
+         "postal_code": "1000AA",
+         "country": "Nederland"
+       },
+       "hosting_package_id": 5,
+       "billing_cycle": "yearly",
+       "domain": {
+         "name": "example.nl",
+         "register_domain": true
+       }
+     }
+     
+GET  /api/v1/orders/{orderNumber}  # Order details ophalen
+```
+
+### Admin API (`/api/admin`) - Authentication Required
+
+**All admin endpoints require a Bearer token in the Authorization header:**
+```bash
+Authorization: Bearer {token}
+```
+
+**Customer Management**
+```bash
+GET   /api/admin/customers                    # Lijst klanten (met filtering)
+GET   /api/admin/customers/{id}               # Klant details
+PATCH /api/admin/customers/{id}/status        # Update klant status
+      Body: {"status": "active|suspended"}
+```
+
+**Order Management**
+```bash
+GET   /api/admin/orders                       # Lijst orders (met filtering)
+GET   /api/admin/orders/{id}                  # Order details
+PATCH /api/admin/orders/{id}/status           # Update order status
+      Body: {"status": "pending|processing|active|suspended|cancelled"}
+```
+
+**Billing**
+```bash
+GET  /api/admin/billing                       # Billing overzicht
+GET  /api/admin/billing/due-orders            # Orders die gefactureerd moeten worden
+POST /api/admin/billing/orders/{id}/invoice   # Factuur aanmaken
+POST /api/admin/billing/orders/{id}/sync-customer  # Klant naar Moneybird
+```
+
+**Test Endpoints** (Development only)
+```bash
+POST /api/admin/test/provision/{order_id}          # Trigger provisioning job
+POST /api/admin/test/register-domain/{domain_id}   # Trigger domain registration
+POST /api/admin/test/create-invoice/{order_id}     # Trigger invoice creation
+```
 
 ## 🔒 Security Features
 
@@ -152,6 +335,8 @@ Voeg de volgende secrets toe aan je GitHub repository:
 
 ### Application Security
 
+✅ Laravel Sanctum API authentication
+✅ Token-based authentication voor SPA
 ✅ Rate limiting via middleware
 ✅ Input validation
 ✅ CSRF protection
