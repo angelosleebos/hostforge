@@ -27,6 +27,16 @@ const routes: RouteRecordRaw[] = [
     name: 'payment-return',
     component: () => import('../pages/PaymentReturn.vue'),
   },
+  {
+    path: '/admin',
+    name: 'admin-dashboard',
+    component: () => import('../pages/admin/Dashboard.vue'),
+  },
+  {
+    path: '/admin/pending-customers',
+    name: 'admin-pending-customers',
+    component: () => import('../pages/admin/PendingCustomers.vue'),
+  },
 ];
 
 const router = createRouter({

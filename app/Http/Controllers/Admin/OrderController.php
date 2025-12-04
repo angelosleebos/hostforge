@@ -139,9 +139,11 @@ final class OrderController extends Controller
                 'total_revenue' => Order::where('status', 'active')->sum('total'),
                 'pending_orders' => Order::where('status', 'pending')->count(),
                 'active_customers' => Order::where('status', 'active')->distinct('customer_id')->count(),
-                'monthly_revenue' => Order::where('status', 'active')
+                'monthly_revenue' => number_format((float) Order::where('status', 'active')
                     ->whereMonth('created_at', now()->month)
-                    ->sum('total'),
+                    ->sum('total'), 2, '.', ''),
+                'pending_customers' => \App\Models\Customer::where('status', 'pending')->count(),
+                'activeCustomers' => \App\Models\Customer::where('status', 'approved')->count(),
             ];
 
             return response()->json([
