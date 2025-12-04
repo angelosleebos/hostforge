@@ -37,6 +37,16 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-pending-customers',
     component: () => import('../pages/admin/PendingCustomers.vue'),
   },
+  {
+    path: '/customer/login',
+    name: 'customer-login',
+    component: () => import('../pages/customer/Login.vue'),
+  },
+  {
+    path: '/customer/dashboard',
+    name: 'customer-dashboard',
+    component: () => import('../pages/customer/Dashboard.vue'),
+  },
 ];
 
 const router = createRouter({
