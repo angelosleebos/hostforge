@@ -251,6 +251,13 @@ const filters = ref({
 });
 
 const loadOrders = async () => {
+  // Check if user is authenticated before making API call
+  const token = localStorage.getItem('admin_token');
+  if (!token) {
+    router.push('/admin/login');
+    return;
+  }
+
   loading.value = true;
   try {
     const params = new URLSearchParams();

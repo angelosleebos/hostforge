@@ -64,4 +64,27 @@ const router = createRouter({
   routes,
 });
 
+// Navigation guard to check auth
+router.beforeEach((to, from, next) => {
+  // Check if route requires admin auth
+  if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    const adminToken = localStorage.getItem('admin_token');
+    if (!adminToken) {
+      next('/admin/login');
+      return;
+    }
+  }
+  
+  // Check if route requires customer auth
+  if (to.path.startsWith('/customer') && to.path !== '/customer/login') {
+    const customerToken = localStorage.getItem('customer_token');
+    if (!customerToken) {
+      next('/customer/login');
+      return;
+    }
+  }
+  
+  next();
+});
+
 export default router;
