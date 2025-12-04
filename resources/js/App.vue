@@ -6,7 +6,7 @@
           <div class="flex">
             <div class="flex-shrink-0 flex items-center">
               <router-link to="/" class="text-2xl font-bold text-primary-500">
-                HostingFirm
+                HostForge
               </router-link>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -41,7 +41,7 @@
     <footer class="bg-white dark:bg-black mt-16 border-t border-gray-200 dark:border-gray-800">
       <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <p class="text-center text-gray-500 dark:text-gray-400 text-sm">
-          &copy; 2025 HostingFirm. Alle rechten voorbehouden.
+          &copy; 2025 HostForge. Alle rechten voorbehouden.
         </p>
       </div>
     </footer>
