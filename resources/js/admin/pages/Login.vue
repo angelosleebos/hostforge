@@ -74,9 +74,12 @@ const handleLogin = async () => {
 
   try {
     const response = await api.post('/admin/login', form.value);
-    localStorage.setItem('auth_token', response.data.token);
+    const token = response.data.data.token;
+    localStorage.setItem('auth_token', token);
+    console.log('Login successful, token stored');
     router.push({ name: 'admin-dashboard' });
   } catch (err: any) {
+    console.error('Login error:', err);
     error.value = err.response?.data?.message || 'Ongeldige inloggegevens';
   } finally {
     loading.value = false;
