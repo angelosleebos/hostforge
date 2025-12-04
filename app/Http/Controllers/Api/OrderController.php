@@ -61,9 +61,8 @@ final class OrderController extends Controller
 
             $paymentUrl = null;
 
-            // Skip Mollie in local development if account is suspended
-            if (config('services.mollie.key') && !str_starts_with(config('services.mollie.key'), 'test_')) {
-                // Create Mollie payment using direct API
+            // Create Mollie payment
+            try {
                 $paymentData = [
                     'amount' => [
                         'currency' => 'EUR',
@@ -85,8 +84,9 @@ final class OrderController extends Controller
 
                 $payment = Mollie::api()->payments->create($paymentData);
                 $paymentUrl = $payment->getCheckoutUrl();
-            } else {
-                // In development with test key, return a mock URL
+            } catch (\Exception $e) {
+                Log::warning('Mollie payment creation failed, using mock URL', ['error' => $e->getMessage()]);
+                // Fallback to mock URL if Mollie fails
                 $paymentUrl = config('app.url') . "/payment/return?order={$order->order_number}&mock=true";
             }
 
