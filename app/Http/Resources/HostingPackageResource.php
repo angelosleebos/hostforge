@@ -20,8 +20,8 @@ class HostingPackageResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'price_monthly' => number_format($this->price, 2),
-            'price_yearly' => number_format($this->price_yearly, 2),
+            'price_monthly' => number_format((float) $this->price, 2),
+            'price_yearly' => number_format((float) $this->price_yearly, 2),
             'billing_period' => $this->billing_period,
             'features' => [
                 'disk_space' => $this->disk_space_mb . ' MB',

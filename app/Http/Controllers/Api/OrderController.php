@@ -52,7 +52,7 @@ final class OrderController extends Controller
                 'customer_id' => 0, // Will be set in action
                 'hosting_package_id' => $validated['order']['hosting_package_id'],
                 'billing_cycle' => $validated['order']['billing_cycle'],
-                'domains' => DataCollection::make($domains),
+                'domains' => new DataCollection(DomainData::class, $domains),
             ]);
 
             // Execute action
