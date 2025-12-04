@@ -61,8 +61,8 @@ COPY vite.config.js ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies - use npm install as fallback if package-lock doesn't exist
+RUN npm install --production --frozen-lockfile || npm install --production
 
 # Copy frontend source
 COPY resources ./resources

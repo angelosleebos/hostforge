@@ -1,0 +1,56 @@
+FROM php:8.2-fpm-alpine
+
+# Set working directory
+WORKDIR /var/www
+
+# Install system dependencies and PHP extensions
+RUN apk add --no-cache \
+    postgresql-dev \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    nodejs \
+    npm
+
+# Install PHP extensions
+RUN docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pgsql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd
+
+# Install Redis extension
+RUN apk add --no-cache $PHPIZE_DEPS && \
+    pecl install redis && \
+    docker-php-ext-enable redis && \
+    apk del $PHPIZE_DEPS
+
+# Copy composer from official image
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy PHP configuration
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Create non-root user
+RUN addgroup -g 1000 hostforge && \
+    adduser -u 1000 -G hostforge -h /home/hostforge -s /bin/sh -D hostforge
+
+# Set permissions
+RUN chown -R hostforge:hostforge /var/www
+
+# Switch to non-root user
+USER hostforge
+
+# Expose PHP-FPM port
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm", "-F"]
